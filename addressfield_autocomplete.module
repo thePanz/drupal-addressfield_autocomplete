@@ -1,0 +1,206 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function addressfield_autocomplete_menu() {
+  $items = array();
+  $items['admin/config/system/addressfield_autocomplete'] = array(
+      'title' => 'Addressfield autocomplete settings',
+      'description' => 'Adjust the addressfield autocomplete settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('addressfield_autocomplete_settings'),
+      'access arguments' => array('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM,
+      'file' => 'addressfield_autocomplete.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function addressfield_autocomplete_field_widget_info() {
+  return array(
+      'addressfield_autocomplete' => array(
+          'label' => t('Address Autocomplete'),
+          'field types' => array('addressfield'),
+          'settings' => array(
+              'available_countries' => array(),
+              'format_handlers' => array('address'),
+          ),
+      ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_settings_form()
+ */
+function addressfield_autocomplete_field_widget_settings_form($field, $instance) {
+  $widget = $instance['widget'];
+  $widget['type'] = 'addressfield_standard';
+  $defaults = field_info_widget_settings($widget['type']);
+  $settings = array_merge($defaults, $widget['settings']);
+
+  if ($widget['type'] == 'addressfield_standard') {
+    $form['available_countries'] = array(
+        '#type' => 'select',
+        '#multiple' => TRUE,
+        '#title' => t('Available countries'),
+        '#description' => t('If no countries are selected, all countries will be available.'),
+        '#options' => _addressfield_country_options_list(),
+        '#default_value' => $settings['available_countries'],
+    );
+
+    $form['format_handlers'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Format handlers'),
+        '#options' => addressfield_format_plugins_options(),
+        '#default_value' => $settings['format_handlers'],
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  if ($instance['widget']['type'] == 'addressfield_autocomplete') {
+    $default_value = isset($items[$delta]) ? $items[$delta] : array();
+    $api_key = variable_get('addressfield_autocomplete_google_maps_api_key', '');
+    $name = _addressfield_autocomplete_get_name($element);
+
+    if ($api_key) {
+      $id = drupal_html_id(str_replace('_', '-', "edit-{$element['#field_name']}-{$element['#language']}-{$element['#delta']}"));
+      $data = isset($default_value['data']) ? unserialize($default_value['data']) : array();
+      $lat = isset($data['latitude']) && $data['latitude'] ? $data['latitude'] : 0;
+      $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
+
+      $form['#attached']['js'] = array(
+          'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places&key=' . $api_key => array('type' => 'external'),
+          drupal_get_path('module', 'addressfield_autocomplete') . '/addressfield_autocomplete.js' => array('type' => 'file'),
+      );
+
+      if(!$default_value){
+        //set the country to null so that is field_empty works
+        $items[$delta]['country'] = '';
+      }
+
+      $instance['widget']['type'] = 'addressfield_standard';
+      $address_field = addressfield_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+
+      $address_field += array(
+          'latitude' => array(
+              '#type' => 'hidden',
+              '#default_value' => $lat,
+              '#attributes' => array(
+                  'class' => array('latitude')
+              ),
+          ),
+          'longitude' => array(
+              '#type' => 'hidden',
+              '#default_value' => $lng,
+              '#attributes' => array(
+                  'class' => array('longitude')
+              ),
+          ),
+      );
+
+      $element += array(
+          'reveal' => array(
+              '#type' => 'hidden',
+              '#default_value' => $default_value ? 1 : 0,
+              '#attributes' => array(
+                  'class' => array('addressfield-autocomplete-hidden-reveal')
+              ),
+          ),
+          'autocomplete' => array(
+              '#type' => 'textfield',
+              '#title' => t('Address'),
+              '#description' => '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">Enter one manually</a>',
+              '#required' => $instance['required'],
+              '#default_value' => $default_value ? 'Manual' : '',
+              '#maxlength' => 200,
+              '#attributes' => array(
+                  'placeholder' => '',
+                  'class' => array('addressfield-autocomplete-input')
+              ),
+              '#states' => array(
+                  'visible' => array(
+                      ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
+                  ),
+              ),
+          ),
+          'widget' => array(
+              '#type' => 'container',
+              '#weight' => 10,
+              '#states' => array(
+                  'visible' => array(
+                      ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
+                  ),
+              )
+          ),
+          'map' => array(
+              '#markup' => '<div id="' . $id . '-map" class="clearfix autocomplete-map"></div>',
+              '#weight' => 11,
+          ),
+      );
+
+
+      $element['widget'] += $address_field;
+
+
+      if (isset($form_state['build_info']['form_id']) && $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
+        $element['autocomplete']['#required'] = FALSE;
+      }
+    } elseif (user_access('administer site configuration')) {
+      $element += array('#markup' => t('You need to !url before this widget appears.', array('!url' => l(t('enter your google maps API key'), 'admin/config/system/addressfield_autocomplete'))));
+    }
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_attach_submit().
+ */
+function addressfield_autocomplete_field_attach_submit($entity_type, $entity, $form, &$form_state) {
+  $entity->type = $entity_type != 'user' ? $entity->type : 'user';
+  $content_langcode = isset($entity->language) && !empty($entity->language) ? $entity->language : LANGUAGE_NONE;
+  $instances = field_info_instances($entity_type, $entity->type);
+
+  foreach ($instances as $instance) {
+    $field_name = $instance['field_name'];
+    $info = field_info_field($field_name);
+    if ($info['type'] == 'addressfield') {
+      $langcode = $info['translatable'] ? $content_langcode : LANGUAGE_NONE;
+      $items = field_get_items($entity_type, (object) $form_state['values'], $instance['field_name']);
+      foreach ($items as $delta => $item) {
+        if (isset($item['widget']['latitude'])) {
+          $data = $address = array();
+          $data['latitude'] = $item['widget']['latitude'];
+          $data['longitude'] = $item['widget']['longitude'];
+          foreach (array('element_key', 'latitude', 'longitude') as $key) {
+            unset($item['widget'][$key]);
+          }
+          $address = $item['widget'];
+          $address['data'] = serialize($data);
+          $entity->{$field_name}[$langcode][$delta] = $form_state['values'][$field_name][$langcode][$delta] = $address;
+        }
+      }
+    }
+  }
+}
+
+function _addressfield_autocomplete_get_name(&$element) {
+  //Element name
+  $element['#field_parents'] = array_merge($element['#field_parents'], array($element['#field_name'], $element['#language'], $element['#delta']));
+  $name = array_shift($element['#field_parents']);
+  $element['#name'] = $name;
+  if (count($element['#field_parents'])) {
+    $element['#name'] .= '[' . implode('][', $element['#field_parents']) . ']';
+  }
+  array_unshift($element['#field_parents'], $name);
+  return $element['#name'];
+}
