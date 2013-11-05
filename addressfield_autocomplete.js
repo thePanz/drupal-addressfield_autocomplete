@@ -1,3 +1,10 @@
+/**
+ * @file
+ * The addressfield autocomplete js.
+ *
+ * OO Js to allow user to pick an autocompleted address from google
+ */
+
 var addressfieldAutocomplete;
 var navigator_lat = 0;
 var navigator_lng = 0;
@@ -8,9 +15,9 @@ var autocompleteList = new Object();
   Drupal.behaviors.addressfield_autocomplete = {
     attach: function(context) {
       //Manually add address
-      $('.addressfield-autocomplete-input').once('autocomplete-processed').each(function(){
-          var autocomplete = new addressfieldAutocomplete($(this).attr('name'));
-          autocomplete.init();
+      $('.addressfield-autocomplete-input').once('autocomplete-processed').each(function() {
+        var autocomplete = new addressfieldAutocomplete($(this).attr('name'));
+        autocomplete.init();
       });
 
       $('.addressfield-autocomplete-reveal').once('autocomplete-reveal').bind('mousedown', function(e) {
@@ -19,7 +26,6 @@ var autocompleteList = new Object();
         var id = undefined;
         if ($(this).attr('id')) {
           id = $(this).attr('id');
-          console.log(id);
         } else {
           id = $(this).parent().siblings('.addressfield-autocomplete-input').attr('id');
         }
@@ -38,13 +44,13 @@ var autocompleteList = new Object();
         o.showAddress();
       });
 
-      //If the country is changed
       $('select.country').once('country').change(function() {
         var id = $(this).closest('div[id^="addressfield-wrapper"]').prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
         o = autocompleteList[id];
         o.address_obj = $(this).closest('div[id^="addressfield-wrapper"]');
         o.geocodeAddress();
       });
+
       //If you blur out of the postal code
       $('input.postal-code').once('postal-code').blur(function() {
         var id = $(this).closest('div[id^="addressfield-wrapper"]').prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
@@ -54,6 +60,17 @@ var autocompleteList = new Object();
       });
 
       if (context) {
+        if (context[0] !== undefined) {
+          if (context.has('[id^="addressfield-wrapper"]')) {
+            var id = context.prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
+            if (id !== undefined && autocompleteList[id] !== undefined) {
+              o = autocompleteList[id];
+              o.address_obj = context;
+              o.updateAddress();
+            }
+          }
+        }
+
         //If the state is in the context
         if ($('select.state', context).length) {
           $('select.state', context).once('state').each(function() {
