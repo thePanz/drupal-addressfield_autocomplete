@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * The addressfield install.
+ *
+ * Removes variables when uninstalling.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function addressfield_autocomplete_uninstall() {
+  variable_del('addressfield_autocomplete_google_maps_api_key');
+}

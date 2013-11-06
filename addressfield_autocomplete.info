@@ -2,5 +2,6 @@ name = Addressfield Autocomplete
 description = "Uses google maps api to help users fill in addresses, if they can't find their address then they can add one manually"
 package = Other
 core = 7.x
+dependencies[] = addressfield
 stylesheets[screen][] = addressfield_autocomplete.css
 configure = admin/config/system/addressfield_autocomplete
