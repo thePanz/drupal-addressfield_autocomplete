@@ -147,7 +147,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       if (isset($form_state['build_info']['form_id']) && $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
         $element['autocomplete']['#required'] = FALSE;
       }
-    } 
+    }
     elseif (user_access('administer site configuration')) {
       $element += array(
         '#markup' => t('You need to !url before this widget appears.', array(
@@ -196,9 +196,9 @@ function addressfield_autocomplete_field_attach_submit($entity_type, $entity, $f
 function _addressfield_autocomplete_get_name(&$element) {
   $element['#field_parents'] = array_merge(
       $element['#field_parents'], array(
-    $element['#field_name'],
-    $element['#language'],
-    $element['#delta'],
+        $element['#field_name'],
+        $element['#language'],
+        $element['#delta'],
       )
   );
   $name = array_shift($element['#field_parents']);

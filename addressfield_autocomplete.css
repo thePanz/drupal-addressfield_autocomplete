@@ -14,7 +14,7 @@ div.autocomplete-map {
   padding: 5px;
 }
 .pac-container .addressfield-autocomplete-reveal {
-  position: absolute; 
+  position: absolute;
   bottom: 5px;
   left: 2px;
   display: block;

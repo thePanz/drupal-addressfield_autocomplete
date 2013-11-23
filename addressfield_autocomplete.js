@@ -257,32 +257,32 @@ var autocompleteList = new Object();
               thoroughfare[0].value += o.place.address_components[i].long_name;
             }
             break;
-            
+
           case "postal_town":
           case "locality":
             //if (!o.address_obj.find('input.locality:first').val()) {
             o.address_obj.find('input.locality:first').val(o.place.address_components[i].long_name);
             //}
             break;
-            
+
           case "sub_locality":
             //if (!o.address_obj.find('input.dependent-locality:first').val()) {
             o.address_obj.find('input.dependent-locality:first').val(o.place.address_components[i].long_name);
             //}
             break;
-            
+
           case "administrative_area_level_2":
             //if (!o.address_obj.find('input.state:first').val()) {
             o.address_obj.find('input.state:first').val(o.place.address_components[i].long_name);
             //}
             break;
-            
+
           case "postal_code":
             //if (!o.address_obj.find('input.postal-code:first').val()) {
             o.address_obj.find('input.postal-code:first').val(o.place.address_components[i].long_name);
             //}
             break;
-            
+
           case "country":
             o.address_obj.find('select.country:first').val(o.place.address_components[i].short_name);
             break;
