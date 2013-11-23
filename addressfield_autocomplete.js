@@ -2,7 +2,7 @@
  * @file
  * The addressfield autocomplete js.
  *
- * OO Js to allow user to pick an autocompleted address from google
+ * OO Js to allow user to pick an autocompleted address from
  */
 
 var addressfieldAutocomplete;
@@ -31,7 +31,6 @@ var autocompleteList = new Object();
         }
 
         o = autocompleteList[id];
-        console.log($(this).parent().html());
         o.input_obj.val('Manual');
         e.preventDefault();
         o.manual = true;
