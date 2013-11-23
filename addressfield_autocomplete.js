@@ -76,7 +76,7 @@ var autocompleteList = new Object();
             if (o.place.address_components.length > 1) {
               for (var i = 0; i < o.place.address_components.length; i++) {
                 switch (o.place.address_components[i].types[0]) {
-                  case 'administrative_area_level_1' :
+                  case 'administrative_area_level_1':
                     $(this).val(o.place.address_components[i].short_name);
                     break;
                 }
@@ -203,7 +203,7 @@ var autocompleteList = new Object();
       if (o.place.geometry.viewport) {
         o.map.fitBounds(o.place.geometry.viewport);
       } else {
-        o.map.setZoom(17); // Why 17? Because it looks good.
+        o.map.setZoom(17);
       }
 
       //set marker
@@ -247,8 +247,8 @@ var autocompleteList = new Object();
       //Move the components into the correct place
       for (var i = 0; i < o.place.address_components.length; i++) {
         switch (o.place.address_components[i].types[0]) {
-          case "street_number" :
-          case "route" :
+          case "street_number":
+          case "route":
             if (!thoroughfare_completed) {
               var thoroughfare = o.address_obj.find('input.thoroughfare:first');
               if (thoroughfare.val()) {
@@ -257,28 +257,33 @@ var autocompleteList = new Object();
               thoroughfare[0].value += o.place.address_components[i].long_name;
             }
             break;
-          case "postal_town" :
-          case "locality" :
+            
+          case "postal_town":
+          case "locality":
             //if (!o.address_obj.find('input.locality:first').val()) {
             o.address_obj.find('input.locality:first').val(o.place.address_components[i].long_name);
             //}
             break;
-          case "sub_locality" :
+            
+          case "sub_locality":
             //if (!o.address_obj.find('input.dependent-locality:first').val()) {
             o.address_obj.find('input.dependent-locality:first').val(o.place.address_components[i].long_name);
             //}
             break;
-          case "administrative_area_level_2" :
+            
+          case "administrative_area_level_2":
             //if (!o.address_obj.find('input.state:first').val()) {
             o.address_obj.find('input.state:first').val(o.place.address_components[i].long_name);
             //}
             break;
-          case "postal_code" :
+            
+          case "postal_code":
             //if (!o.address_obj.find('input.postal-code:first').val()) {
             o.address_obj.find('input.postal-code:first').val(o.place.address_components[i].long_name);
             //}
             break;
-          case "country" :
+            
+          case "country":
             o.address_obj.find('select.country:first').val(o.place.address_components[i].short_name);
             break;
         }

@@ -6,19 +6,23 @@ which utilises the addressfield autocomplete functionality.
 Dependencies
 ------------------------------------------------------------------------------
 This module extends addressfield. It adds a new widget, so you can choose an
-address more easily
+address more easily. It also requires the GMap module and in this module you 
+must input a google maps API key.
 
 Installation
 ------------------------------------------------------------------------------
-1. Install the module in the usual way.
-2. Setup Google Maps API key more information on how to do this can be found here https://developers.google.com/maps/signup
-3. Copy the key to here /admin/config/system/addressfield_autocomplete and save
-3. Navigate to manage fields inside a content type.
-4. Create or edit a new or existing address field, change the widget to Address autocomplete.
+1. Make sure you have installed both the addressfield and GMap modules; and 
+   that you have input a valid google maps api key here 
+   /admin/config/services/gmap. If you need help obtaining a google maps API 
+   key here is a tutorial, 
+   https://developers.google.com/maps/documentation/javascript/tutorial#api_key
+2. Navigate to manage fields inside a content type.
+3. Create or edit a new or existing address field, change the widget to Address 
+   autocomplete.
 
 Issues
 ------------------------------------------------------------------------------
-* There is a known issue with addressfield https://drupal.org/node/968112 whereby
-if you make address an optional field it will still save data to the db. This is
-because there is no country -none- option. There is a link to a patch in the link
-above.
+There is a known issue with addressfield https://drupal.org/node/968112 
+whereby if you make address an optional field it will still save data to the db. 
+This is because there is no country -none- option. There is a link to a patch 
+in the linkabove.

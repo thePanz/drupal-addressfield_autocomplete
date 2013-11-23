@@ -3,24 +3,26 @@
 * Layouts for the map and autosuggest.
 */
 div.autocomplete-map {
-  width:800px;
-  height:400px;
-  display:none;
+  width: 800px;
+  height: 400px;
+  display: none;
   margin-top: 30px;
-  line-height:normal;
+  line-height: normal;
 }
 .google-info-window {
-  height:100px;
-  padding:5px;
+  height: 100px;
+  padding: 5px;
 }
 .pac-container .addressfield-autocomplete-reveal {
-  position:absolute; 
-  bottom:5px; 
-  left:2px;
-  display:block;
-  z-index:1010;
-  height:15px;
-  width:160px;
-  border:1px solid transparent;
+  position: absolute; 
+  bottom: 5px;
+  left: 2px;
+  display: block;
+  z-index: 1010;
+  height: 15px;
+  width: 160px;
+  border: 1px solid transparent;
 }
-div.autocomplete-map img { max-width: none; }
+div.autocomplete-map img {
+  max-width: none;
+}
