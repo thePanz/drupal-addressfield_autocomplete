@@ -44,7 +44,8 @@ var autocompleteList = new Object();
       });
 
       $('select.country').once('country').change(function() {
-        var id = $(this).closest('div[id^="addressfield-wrapper"]').prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
+        var wrapper = $(this).closest('div[id^="addressfield-wrapper"]');
+        var id = wrapper.prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
         o = autocompleteList[id];
         o.address_obj = $(this).closest('div[id^="addressfield-wrapper"]');
         o.geocodeAddress();
@@ -52,7 +53,8 @@ var autocompleteList = new Object();
 
       //If you blur out of the postal code
       $('input.postal-code').once('postal-code').blur(function() {
-        var id = $(this).closest('div[id^="addressfield-wrapper"]').prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
+        var wrapper = $(this).closest('div[id^="addressfield-wrapper"]');
+        var id = wrapper.prev('.form-item').find('.addressfield-autocomplete-input').attr('id');
         o = autocompleteList[id];
         o.address_obj = $(this).closest('div[id^="addressfield-wrapper"]');
         o.geocodeAddress();
@@ -73,7 +75,7 @@ var autocompleteList = new Object();
         //If the state is in the context
         if ($('select.state', context).length) {
           $('select.state', context).once('state').each(function() {
-            if (o.place.address_components.length > 1) {
+            if (typeof o !== 'undefined' && o.place.address_components.length > 1) {
               for (var i = 0; i < o.place.address_components.length; i++) {
                 switch (o.place.address_components[i].types[0]) {
                   case 'administrative_area_level_1':
@@ -87,6 +89,8 @@ var autocompleteList = new Object();
       }
     }
   };
+
+
 
   addressfieldAutocomplete = function(name) {
     var o;
@@ -114,8 +118,7 @@ var autocompleteList = new Object();
     this.prev_address = "";
     this.init = function() {
       o = this;
-      console.log(o);
-      autocompleteList[o.input_id] = o;
+      autocompleteList[this.input_id] = o;
       google.maps.event.addDomListener(window, 'load', o.load());
       //If lat lng not undefined then we show the map
       if ((o.lat !== 0 && o.lng !== 0) || o.input_obj.closest('.form-item').prev('.addressfield-autocomplete-hidden-reveal').val() == 1) {

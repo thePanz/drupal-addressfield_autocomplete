@@ -69,19 +69,19 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
  */
 function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   if ($instance['widget']['type'] == 'addressfield_autocomplete') {
+    $path = drupal_get_path('module', 'addressfield_autocomplete');
     $default_value = isset($items[$delta]) ? $items[$delta] : array();
     $api_key = variable_get('gmap_api_key', '');
     $name = _addressfield_autocomplete_get_name($element);
     $gmap_defaults = gmap_defaults();
 
     if ($api_key) {
-      $id = drupal_html_id(str_replace('_', '-', "edit-{$element['#field_name']}-{$element['#language']}-{$element['#delta']}"));
       $data = isset($default_value['data']) ? unserialize($default_value['data']) : array();
       $lat = isset($data['latitude']) && $data['latitude'] ? $data['latitude'] : 0;
       $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
 
       $js = _gmap_base_js();
-      $js[drupal_get_path('module', 'addressfield_autocomplete') . '/addressfield_autocomplete.js'] = array('type' => 'file');
+      $js[$path . '/addressfield_autocomplete.js'] = array('type' => 'file');
       $form['#attached']['js'] = $js;
 
       $instance['widget']['type'] = 'addressfield_standard';
@@ -103,6 +103,17 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         ),
       );
 
+      // Map markup
+      $map = '<div class="clearfix autocomplete-map" ';
+      $map .= 'style="width: ' . $gmap_defaults['width']. ';';
+      $map .= 'height:' . $gmap_defaults['height'] . ';">';
+      $map .= '</div>';
+
+      // Link markup
+      $link = '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">';
+      $link .= t('Enter one manually');
+      $link .= '</a>';
+
       $element += array(
         'reveal' => array(
           '#type' => 'hidden',
@@ -114,7 +125,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         'autocomplete' => array(
           '#type' => 'textfield',
           '#title' => t('Address'),
-          '#description' => '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">' . t('Enter one manually') . '</a>',
+          '#description' => $link,
           '#required' => $instance['required'],
           '#default_value' => $default_value ? 'Manual' : '',
           '#maxlength' => 200,
@@ -138,7 +149,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
           ),
         ),
         'map' => array(
-          '#markup' => '<div id="' . $id . '-map" class="clearfix autocomplete-map" style="width: ' . $gmap_defaults['width'] . ';height:' . $gmap_defaults['height'] . ';"></div>',
+          '#markup' => $map,
           '#weight' => 11,
         ),
       );
@@ -147,8 +158,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       if (isset($form_state['build_info']['form_id']) && $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
         $element['autocomplete']['#required'] = FALSE;
       }
-    }
-    elseif (user_access('administer site configuration')) {
+    } elseif (user_access('administer site configuration')) {
       $element += array(
         '#markup' => t('You need to !url before this widget appears.', array(
           '!url' => l(t('enter your google maps API key'), 'admin/config/services/gmap'),
@@ -195,11 +205,11 @@ function addressfield_autocomplete_field_attach_submit($entity_type, $entity, $f
  */
 function _addressfield_autocomplete_get_name(&$element) {
   $element['#field_parents'] = array_merge(
-      $element['#field_parents'], array(
-        $element['#field_name'],
-        $element['#language'],
-        $element['#delta'],
-      )
+    $element['#field_parents'], array(
+      $element['#field_name'],
+      $element['#language'],
+      $element['#delta'],
+    )
   );
   $name = array_shift($element['#field_parents']);
   $element['#name'] = $name;

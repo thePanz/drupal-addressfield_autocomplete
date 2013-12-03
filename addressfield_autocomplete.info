@@ -5,4 +5,4 @@ core = 7.x
 dependencies[] = addressfield
 dependencies[] = gmap
 stylesheets[screen][] = addressfield_autocomplete.css
-configure = admin/config/system/addressfield_autocomplete
+configure = admin/config/services/gmap
