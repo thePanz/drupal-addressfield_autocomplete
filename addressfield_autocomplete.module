@@ -159,7 +159,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         $element['autocomplete']['#required'] = FALSE;
       }
     }
-    else if (user_access('administer site configuration')) {
+    elseif (user_access('administer site configuration')) {
       $element += array(
         '#markup' => t('You need to !url before this widget appears.', array(
           '!url' => l(t('enter your google maps API key'), 'admin/config/services/gmap'),
