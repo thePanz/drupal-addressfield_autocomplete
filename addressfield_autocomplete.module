@@ -103,13 +103,13 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         ),
       );
 
-      // Map markup
+      // Map markup.
       $map = '<div class="clearfix autocomplete-map" ';
-      $map .= 'style="width: ' . $gmap_defaults['width']. ';';
+      $map .= 'style="width: ' . $gmap_defaults['width'] . ';';
       $map .= 'height:' . $gmap_defaults['height'] . ';">';
       $map .= '</div>';
 
-      // Link markup
+      // Link markup.
       $link = '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">';
       $link .= t('Enter one manually');
       $link .= '</a>';
@@ -158,7 +158,8 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       if (isset($form_state['build_info']['form_id']) && $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
         $element['autocomplete']['#required'] = FALSE;
       }
-    } elseif (user_access('administer site configuration')) {
+    }
+    else if (user_access('administer site configuration')) {
       $element += array(
         '#markup' => t('You need to !url before this widget appears.', array(
           '!url' => l(t('enter your google maps API key'), 'admin/config/services/gmap'),

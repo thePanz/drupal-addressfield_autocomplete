@@ -90,8 +90,6 @@ var autocompleteList = new Object();
     }
   };
 
-
-
   addressfieldAutocomplete = function(name) {
     var o;
     this.default_lat = 51.50722;
