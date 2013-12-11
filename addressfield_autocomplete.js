@@ -122,10 +122,10 @@ var autocompleteList = new Object();
       if ((o.lat !== 0 && o.lng !== 0) || o.input_obj.closest('.form-item').prev('.addressfield-autocomplete-hidden-reveal').val() == 1) {
         if (o.lat !== 0 && o.lng !== 0) {
           var pos = new google.maps.LatLng(o.lat, o.lng);
-          o.setMarker(pos);
-          o.map.setCenter(pos);
           o.showAddress();
           o.map.setZoom(17);
+          o.setMarker(pos);
+          o.map.setCenter(pos);
         } else {
           o.geocodeAddress();
           o.showAddress();
@@ -145,7 +145,9 @@ var autocompleteList = new Object();
       o.autocomplete = new google.maps.places.Autocomplete(o.input);
 
       if (o.map !== undefined) {
-        o.marker = new google.maps.Marker({map: o.map});
+        o.marker = new google.maps.Marker({
+          map: o.map
+        });
         if (o.autocomplete !== undefined) {
           o.autocomplete.bindTo('bounds', o.map);
         }
@@ -207,12 +209,8 @@ var autocompleteList = new Object();
         o.map.setZoom(17);
       }
 
-      //set marker
-      o.setMarker();
       //Show address_components and put them in the correct position
       o.updateAddress();
-      //Reset centre
-      o.map.setCenter(o.place.geometry.location);
       return false;
     };
     this.updateAddress = function() {
@@ -225,21 +223,25 @@ var autocompleteList = new Object();
 
       if (o.infowindow_display) {
         var address = '';
+        if (o.display_marker) {
+          o.setMarker();
+        }
         if (o.place.address_components) {
           address = [
-            (o.place.address_components[0] && o.place.address_components[0].long_name || ''),
-            (o.place.address_components[1] && o.place.address_components[1].long_name || ''),
-            (o.place.address_components[2] && o.place.address_components[2].long_name || ''),
-            (o.place.address_components[3] && o.place.address_components[3].long_name || ''),
-            (o.place.address_components[4] && o.place.address_components[4].long_name || '')
+          (o.place.address_components[0] && o.place.address_components[0].long_name || ''),
+          (o.place.address_components[1] && o.place.address_components[1].long_name || ''),
+          (o.place.address_components[2] && o.place.address_components[2].long_name || ''),
+          (o.place.address_components[3] && o.place.address_components[3].long_name || ''),
+          (o.place.address_components[4] && o.place.address_components[4].long_name || '')
           ].join(',<br />');
         }
         //Reveal the address in the google map info window
-
         if (o.map !== undefined) {
           var addObj = $('<div class="google-info-window"><address>' + $.trim(address) + '</address></div>');
           if (o.infowindow === undefined) {
-            o.infowindow = new google.maps.InfoWindow({content: addObj[0]});
+            o.infowindow = new google.maps.InfoWindow({
+              content: addObj[0]
+            });
           }
           o.infowindow.open(o.map, o.marker);
         }
@@ -261,27 +263,19 @@ var autocompleteList = new Object();
 
           case "postal_town":
           case "locality":
-            //if (!o.address_obj.find('input.locality:first').val()) {
             o.address_obj.find('input.locality:first').val(o.place.address_components[i].long_name);
-            //}
             break;
 
           case "sub_locality":
-            //if (!o.address_obj.find('input.dependent-locality:first').val()) {
             o.address_obj.find('input.dependent-locality:first').val(o.place.address_components[i].long_name);
-            //}
             break;
 
           case "administrative_area_level_2":
-            //if (!o.address_obj.find('input.state:first').val()) {
             o.address_obj.find('input.state:first').val(o.place.address_components[i].long_name);
-            //}
             break;
 
           case "postal_code":
-            //if (!o.address_obj.find('input.postal-code:first').val()) {
             o.address_obj.find('input.postal-code:first').val(o.place.address_components[i].long_name);
-            //}
             break;
 
           case "country":
@@ -293,19 +287,12 @@ var autocompleteList = new Object();
       //Add latitude and longitude values
       o.address_obj.find('.latitude').val(o.place.geometry.location.lat());
       o.address_obj.find('.longitude').val(o.place.geometry.location.lng());
+      o.map.setCenter(o.place.geometry.location);
       o.showAddress();
     };
     this.setPosition = function() {
       if (navigator.geolocation && o.manual && (!o.lat && !o.lng) && (!navigator_lat && !navigator_lng)) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          navigator_lat = position.coords.latitude;
-          navigator_lng = position.coords.longitude;
-          var pos = new google.maps.LatLng(navigator_lat, navigator_lng);
-          o.map.setZoom(13);
-          o.map.setCenter(pos);
-        }, function() {
-          o.setDefaultPosition();
-        });
+        navigator.geolocation.getCurrentPosition(o.reverseGeocodeAddress);
       } else {
         o.setDefaultPosition();
       }
@@ -369,20 +356,32 @@ var autocompleteList = new Object();
       o.infowindow_display = o.display_marker = true;
       var new_address = o.getAddress();
       if (o.prev_address !== new_address) {
-        o.geocoder.geocode({'address': new_address}, function(results, status) {
+        o.geocoder.geocode({
+          'address': new_address
+        }, function(results, status) {
           if (status === google.maps.GeocoderStatus.OK) {
-            o.map.setCenter(results[0].geometry.location);
             o.place = results[0];
-            if (o.display_marker) {
-              o.setMarker();
-            }
             o.updateAddress();
-          } else {
-            //alert('Geocode was not successful for the following reason: ' + status);
           }
         });
         o.prev_address = new_address;
       }
     };
+    this.reverseGeocodeAddress = function(position) {
+      navigator_lat = position.coords.latitude;
+      navigator_lng = position.coords.longitude;
+      var pos = new google.maps.LatLng(navigator_lat, navigator_lng);
+      o.geocoder.geocode({
+        'latLng': pos
+      }, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          if (results[0]) {
+            o.place = results[0];
+            o.updateAddress();
+            o.address_obj.find('select.country:first').trigger('change');
+          }
+        }
+      });
+    }
   };
 })(jQuery);
