@@ -4,4 +4,3 @@ package = Other
 core = 7.x
 dependencies[] = addressfield
 dependencies[] = gmap
-configure = admin/config/services/gmap
