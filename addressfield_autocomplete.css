@@ -1,7 +1,7 @@
 /**
-* @file
-* Layouts for the map and autosuggest.
-*/
+ * @file
+ * Layouts for the map and autocomplete.
+ */
 div.autocomplete-map {
   width: 800px;
   height: 400px;

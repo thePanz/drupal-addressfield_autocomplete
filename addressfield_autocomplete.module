@@ -2,14 +2,13 @@
 
 /**
  * @file
- * The addressfield autocomplete module code.
+ * The Addressfield Autocomplete module code.
  *
- * Allows the user to pick a new type of addressfield autocomplete
- * widget.
+ * Allows the user to pick a new type of Addressfield Autocomplete widget.
  */
 
 /**
- * Implements of hook_gmap().
+ * Implements hook_gmap().
  */
 function addressfield_autocomplete_gmap($op, &$map) {
   switch ($op) {
@@ -40,26 +39,25 @@ function addressfield_autocomplete_field_widget_info() {
 function addressfield_autocomplete_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $widget['type'] = 'addressfield_standard';
+
   $defaults = field_info_widget_settings($widget['type']);
   $settings = array_merge($defaults, $widget['settings']);
 
-  if ($widget['type'] == 'addressfield_standard') {
-    $form['available_countries'] = array(
-      '#type' => 'select',
-      '#multiple' => TRUE,
-      '#title' => t('Available countries'),
-      '#description' => t('If no countries are selected, all countries will be available.'),
-      '#options' => _addressfield_country_options_list(),
-      '#default_value' => $settings['available_countries'],
-    );
+  $form['available_countries'] = array(
+    '#type' => 'select',
+    '#multiple' => TRUE,
+    '#title' => t('Available countries'),
+    '#description' => t('If no countries are selected, all countries will be available.'),
+    '#options' => _addressfield_country_options_list(),
+    '#default_value' => $settings['available_countries'],
+  );
 
-    $form['format_handlers'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Format handlers'),
-      '#options' => addressfield_format_plugins_options(),
-      '#default_value' => $settings['format_handlers'],
-    );
-  }
+  $form['format_handlers'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Format handlers'),
+    '#options' => addressfield_format_plugins_options(),
+    '#default_value' => $settings['format_handlers'],
+  );
 
   return $form;
 }
@@ -71,100 +69,91 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
   if ($instance['widget']['type'] == 'addressfield_autocomplete') {
     $path = drupal_get_path('module', 'addressfield_autocomplete');
     $default_value = isset($items[$delta]) ? $items[$delta] : array();
-    $api_key = variable_get('gmap_api_key', '');
     $name = _addressfield_autocomplete_get_name($element);
     $gmap_defaults = gmap_defaults();
 
-    if ($api_key) {
-      $data = isset($default_value['data']) ? unserialize($default_value['data']) : array();
-      $lat = isset($data['latitude']) && $data['latitude'] ? $data['latitude'] : 0;
-      $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
+    $data = isset($default_value['data']) ? unserialize($default_value['data']) : array();
+    $lat = isset($data['latitude']) && $data['latitude'] ? $data['latitude'] : 0;
+    $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
 
-      $js = _gmap_base_js();
-      $js[$path . '/addressfield_autocomplete.js'] = array('type' => 'file');
-      $form['#attached']['js'] = $js;
+    $js = _gmap_base_js();
+    $js[$path . '/addressfield_autocomplete.js'] = array('type' => 'file');
+    $form['#attached']['js'] = $js;
+    $form['#attached']['css'] = array($path . '/addressfield_autocomplete.css');
 
-      $instance['widget']['type'] = 'addressfield_standard';
-      $address_field = addressfield_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
-      $address_field += array(
-        'latitude' => array(
-          '#type' => 'hidden',
-          '#default_value' => $lat,
-          '#attributes' => array(
-            'class' => array('latitude'),
+    $instance['widget']['type'] = 'addressfield_standard';
+    $address_field = addressfield_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+    $address_field += array(
+      'latitude' => array(
+        '#type' => 'hidden',
+        '#default_value' => $lat,
+        '#attributes' => array(
+          'class' => array('latitude'),
+        ),
+      ),
+      'longitude' => array(
+        '#type' => 'hidden',
+        '#default_value' => $lng,
+        '#attributes' => array(
+          'class' => array('longitude'),
+        ),
+      ),
+    );
+
+    // Map markup.
+    $map = '<div class="clearfix autocomplete-map" ';
+    $map .= 'style="width: ' . $gmap_defaults['width'] . ';';
+    $map .= 'height:' . $gmap_defaults['height'] . ';">';
+    $map .= '</div>';
+
+    // Link markup.
+    $link = '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">';
+    $link .= t('Enter one manually');
+    $link .= '</a>';
+
+    $element += array(
+      'reveal' => array(
+        '#type' => 'hidden',
+        '#default_value' => $default_value ? 1 : 0,
+        '#attributes' => array(
+          'class' => array('addressfield-autocomplete-hidden-reveal'),
+        ),
+      ),
+      'autocomplete' => array(
+        '#type' => 'textfield',
+        '#title' => t('Address'),
+        '#description' => $link,
+        '#required' => $instance['required'],
+        '#default_value' => $default_value ? 'Manual' : '',
+        '#maxlength' => 200,
+        '#attributes' => array(
+          'placeholder' => '',
+          'class' => array('addressfield-autocomplete-input'),
+        ),
+        '#states' => array(
+          'visible' => array(
+            ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
           ),
         ),
-        'longitude' => array(
-          '#type' => 'hidden',
-          '#default_value' => $lng,
-          '#attributes' => array(
-            'class' => array('longitude'),
+      ),
+      'widget' => array(
+        '#type' => 'container',
+        '#weight' => 10,
+        '#states' => array(
+          'visible' => array(
+            ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
           ),
         ),
-      );
+      ),
+      'map' => array(
+        '#markup' => $map,
+        '#weight' => 11,
+      ),
+    );
 
-      // Map markup.
-      $map = '<div class="clearfix autocomplete-map" ';
-      $map .= 'style="width: ' . $gmap_defaults['width'] . ';';
-      $map .= 'height:' . $gmap_defaults['height'] . ';">';
-      $map .= '</div>';
-
-      // Link markup.
-      $link = '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">';
-      $link .= t('Enter one manually');
-      $link .= '</a>';
-
-      $element += array(
-        'reveal' => array(
-          '#type' => 'hidden',
-          '#default_value' => $default_value ? 1 : 0,
-          '#attributes' => array(
-            'class' => array('addressfield-autocomplete-hidden-reveal'),
-          ),
-        ),
-        'autocomplete' => array(
-          '#type' => 'textfield',
-          '#title' => t('Address'),
-          '#description' => $link,
-          '#required' => $instance['required'],
-          '#default_value' => $default_value ? 'Manual' : '',
-          '#maxlength' => 200,
-          '#attributes' => array(
-            'placeholder' => '',
-            'class' => array('addressfield-autocomplete-input'),
-          ),
-          '#states' => array(
-            'visible' => array(
-              ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
-            ),
-          ),
-        ),
-        'widget' => array(
-          '#type' => 'container',
-          '#weight' => 10,
-          '#states' => array(
-            'visible' => array(
-              ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
-            ),
-          ),
-        ),
-        'map' => array(
-          '#markup' => $map,
-          '#weight' => 11,
-        ),
-      );
-
-      $element['widget'] += $address_field;
-      if (isset($form_state['build_info']['form_id']) && $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
-        $element['autocomplete']['#required'] = FALSE;
-      }
-    }
-    elseif (user_access('administer site configuration')) {
-      $element += array(
-        '#markup' => t('You need to !url before this widget appears.', array(
-          '!url' => l(t('enter your google maps API key'), 'admin/config/services/gmap'),
-        )),
-      );
+    $element['widget'] += $address_field;
+    if (isset($form_state['build_info']['form_id']) && $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
+      $element['autocomplete']['#required'] = FALSE;
     }
   }
   return $element;
@@ -178,17 +167,22 @@ function addressfield_autocomplete_field_attach_submit($entity_type, $entity, $f
   $content_langcode = isset($entity->language) && !empty($entity->language) ? $entity->language : LANGUAGE_NONE;
   $instances = field_info_instances($entity_type, $entity->type);
 
-  if(!isset($form_state['values']['type'])){
+  if (!isset($form_state['values']['type'])) {
     $form_state['values']['type'] = $entity->type;
   }
-  
+
   foreach ($instances as $instance) {
     $field_name = $instance['field_name'];
     $info = field_info_field($field_name);
     if ($info['type'] == 'addressfield') {
       $langcode = $info['translatable'] ? $content_langcode : LANGUAGE_NONE;
       $items = field_get_items($entity_type, (object) $form_state['values'], $instance['field_name']);
-      
+
+      // Do nothing if there are no items.
+      if (empty($items)) {
+        return;
+      }
+
       foreach ($items as $delta => $item) {
         if (isset($item['widget']['latitude'])) {
           $data = $address = array();
@@ -211,11 +205,11 @@ function addressfield_autocomplete_field_attach_submit($entity_type, $entity, $f
  */
 function _addressfield_autocomplete_get_name(&$element) {
   $element['#field_parents'] = array_merge(
-    $element['#field_parents'], array(
-      $element['#field_name'],
-      $element['#language'],
-      $element['#delta'],
-    )
+          $element['#field_parents'], array(
+    $element['#field_name'],
+    $element['#language'],
+    $element['#delta'],
+          )
   );
   $name = array_shift($element['#field_parents']);
   $element['#name'] = $name;
