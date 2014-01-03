@@ -1,17 +1,9 @@
 /**
  * @file
  * Layouts for the map and autocomplete.
- */
-div.autocomplete-map {
-  width: 800px;
-  height: 400px;
-  display: none;
-  margin-top: 30px;
-  line-height: normal;
-}
-.google-info-window {
-  height: 100px;
-  padding: 5px;
+*/
+.pac-container{
+  *padding-bottom:20px !important;
 }
 .pac-container .addressfield-autocomplete-reveal {
   position: absolute;
@@ -19,9 +11,13 @@ div.autocomplete-map {
   left: 2px;
   display: block;
   z-index: 1010;
+  line-height: 20px;
   height: 15px;
   width: 160px;
   border: 1px solid transparent;
+}
+div.autocomplete-map{
+  margin-top: 20px;
 }
 div.autocomplete-map img {
   max-width: none;

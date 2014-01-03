@@ -1,25 +1,34 @@
 Addressfield autocomplete
 ------------------------------------------------------------------------------
 Provides a hook into google maps autocomplete API. Implements a new widget
-which utilises the addressfield autocomplete functionality.
+which utilises the addressfield autocomplete functionality and provides an
+easy to use single box for entering an address. 
+
+It also allows you to target addresses within specific countries and search 
+for full addresses, establishments or just cities within those countries.
 
 Dependencies
 ------------------------------------------------------------------------------
-This module extends addressfield. It adds a new widget, so you can choose an
-address more easily. It also requires the GMap module and in this module you
-must input a google maps API key.
+This module is dependent on the following drupal modules: Addressfield, GMap 
+and Libraries.
+
+It also requires a 3rd party javascript plugin which can be found here:
+http://ubilabs.github.io/geocomplete/
 
 Installation
 ------------------------------------------------------------------------------
-1. Make sure you have installed both the addressfield and GMap modules.
-   https://developers.google.com/maps/documentation/javascript/tutorial#api_key
-2. Navigate to manage fields inside a content type.
-3. Create or edit a new or existing address field, change the widget to Address
+1. Make sure you have installed addressfield, GMap and libraries.
+2. Download the geocomplete plugin from the following location
+   http://ubilabs.github.io/geocomplete/
+3. Extract the plugin to your libraries directory and rename the folder
+   geocomplete.
+4. Navigate to manage fields inside a content type.
+5. Create or edit a new or existing address field, change the widget to Address
    autocomplete.
+6. Adjust the instance settings of the field to suit your needs.
 
-Issues
+Notes
 ------------------------------------------------------------------------------
-There is a known issue with addressfield https://drupal.org/node/968112
-whereby if you make address an optional field it will still save data to the db.
-This is because there is no country -none- option. There is a link to a patch
-in the linkabove.
+Some of the maps settings are inherited from the GMap module settings page.
+These include: width, height, center, zoom and map type. The reset of the 
+settings are configurable through the instance settings form for that field.
