@@ -2,8 +2,8 @@
  * @file
  * Layouts for the map and autocomplete.
 */
-.pac-container{
-  *padding-bottom:20px !important;
+.pac-container {
+  *padding-bottom: 20px !important;
 }
 .pac-container .addressfield-autocomplete-reveal {
   position: absolute;
@@ -16,7 +16,7 @@
   width: 160px;
   border: 1px solid transparent;
 }
-div.autocomplete-map{
+div.autocomplete-map {
   margin-top: 20px;
 }
 div.autocomplete-map img {

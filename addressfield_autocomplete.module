@@ -151,10 +151,11 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
   if ($instance['widget']['type'] == 'addressfield_autocomplete') {
     $gmap_defaults = gmap_defaults();
     switch ($gmap_defaults['maptype']) {
-      case 'Map' :
+      case 'Map':
         $gmap_defaults['maptype'] = 'roadmap';
         break;
-      case 'Physical' :
+      
+      case 'Physical':
         $gmap_defaults['maptype'] = 'terrain';
         break;
     }
@@ -357,8 +358,9 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
 }
 
 /**
- * Addressfield autocomplete transforms data into the structure expected
- * by addressfield.
+ * Addressfield autocomplete transform.
+ * 
+ * Transforms data into the structure accepted by addressfield.
  */
 function _addressfield_autocomplete_widget_transform($element, &$form_state, $form) {
   $values = &$form_state['values'];
@@ -384,6 +386,8 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
 }
 
 /**
+ * Address autocomplete widget validation function.
+ * 
  * Validate to see if lat and lng have been added for addresses which
  * do not reveal the widget.
  */

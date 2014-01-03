@@ -19,7 +19,7 @@
     zoom = parseInt(widget.find('.zoom').val()),
     location
     options = {};
-    
+
     if(settings.map){
       var map = o.closest('.form-item').siblings('.autocomplete-map');
       settings.map_id = map.attr('id');
@@ -41,7 +41,7 @@
      * Set the default options for google maps, places and geocomplete.
      */
     options = {
-      map : !!settings.map ? "#"+settings.map_id : false,
+      map : !!settings.map ? "#" + settings.map_id : false,
       mapOptions : {
         mapTypeId : gmapSettings.maptype,
         zoom : location && zoom ? zoom : parseInt(gmapSettings.zoom),
@@ -103,7 +103,7 @@
     location = gmapSettings.latlong.split(','),
     marker = o.geocomplete('marker'),
     latLng = new google.maps.LatLng(location[0], location[1]);
-      
+    
     if (map){
       map.setCenter(latLng);
       map.setZoom(parseInt(gmapSettings.zoom));
@@ -143,7 +143,7 @@
       if(o.hasClass('manual-add') || o.hasClass('complete')){
         o.removeClass('complete');
         link = link.clone(true).text(Drupal.t('Reset address'));
-        link.attr('id', o.attr('id')).appendTo(widget); 
+        link.attr('id', o.attr('id')).appendTo(widget);
       }
     }
     return widget;
@@ -165,7 +165,7 @@
       }
       /*
        * Take all of the values out of the address fields and insert
-       * them comma separated into the geocomplete box. Then call 
+       * them comma separated into the geocomplete box. Then call
        * geocomplete find, this will hopefully return a result and
        * updated our latitude, longitude and zoom values.
        */
@@ -224,8 +224,8 @@
        * If the change has been triggered because the addressfield
        * module uses ajax to change the widget we will need to come
        * in this function again to update the rest of the values
-       * as the postcode and county field are not always in the 
-       * widget. To update we loop through all fields inside the 
+       * as the postcode and county field are not always in the
+       * widget. To update we loop through all fields inside the
        * widget that have an attribute with data-geo. We then explode
        * the data-geo value on a space because we sometimes wish to
        * add multiple values to the same field. We then replace the
@@ -237,7 +237,7 @@
         for(var i = 0; i < geo.length; i++){
           if(data[geo[i]] !== undefined){
             if(geo[i] == 'street_number' || geo[i] == 'route'){
-              i >= 1 ? $(this).val( $(this).val() + " " + data[geo[i]]) : $(this).val(data[geo[i]]);
+              i >= 1 ? $(this).val($(this).val() + " " + data[geo[i]]) : $(this).val(data[geo[i]]);
             }else{
               $(this).val(data[geo[i]]);
               // If select and value is not empty
@@ -249,10 +249,10 @@
         }
       });
     }
-    
+ 
     /*
-     * The information below will be updated regardless of what method we are 
-     * using.    
+     * The information below will be updated regardless of what method we are
+     * using.
      */
     widget.find('[data-geo="lat"]').val(data['lat']);
     widget.find('[data-geo="lng"]').val(data['lng']);
@@ -260,7 +260,7 @@
       var mapObject = o.geocomplete('map');
       widget.find('.zoom').val(mapObject.getZoom());
       /*
-       * Show the map if hidden, also need to run place changed because 
+       * Show the map if hidden, also need to run place changed because
        * otherwise the map can have visibility problems.
        */
       if(!map.is(':visible')){
@@ -269,14 +269,16 @@
       }
     }
   };
-  
+
   /**
    * Get length of object.
    */
   Object.size = function(obj) {
     var size = 0, key;
     for (key in obj) {
-      if (obj.hasOwnProperty(key)) size++;
+      if (obj.hasOwnProperty(key)){
+        size++;
+      }
     }
     return size;
   };
@@ -286,12 +288,12 @@
       for (var key in Drupal.settings.addressfield_autocomplete.fields) {
         var field = Drupal.settings.addressfield_autocomplete.fields[key];
         if (field.hasOwnProperty('map')){
-          $('.addressfield-autocomplete-input[name^="'+key+'["]').each(function(){
+          $('.addressfield-autocomplete-input[name^="' + key + '["]').each(function(){
             addressfieldAutocompleteInit($(this), field);
           });
         }
       }
-      
+
       /*
        * We need to give the user the option to manually add an
        * address if they can't find one using the addressfield
@@ -336,14 +338,14 @@
               o.addClass('reverse-geocode');
               o.geocomplete('find', lat + ',' + lng);
             });
-          } 
-        }      
+          }
+        }
         addressfieldAutocompleteToggleWidget(o);
       });
       /*
-       * If manual entry has been chosen on blur of each field 
-       * we want to geocode the entire address but not update 
-       * the fields apart from latitude, longitude and zoom. 
+       * If manual entry has been chosen on blur of each field
+       * we want to geocode the entire address but not update
+       * the fields apart from latitude, longitude and zoom.
        * As we want this information even if people are entering
        * their addresses manually.
        */
@@ -375,9 +377,9 @@
          */
         if (context[0] !== undefined && context.has('[id^="addressfield-wrapper"]')) {
           var input = context.prevAll('.form-item').find('.addressfield-autocomplete-input');
-          if(input[0] !== undefined && input.data('result') !== undefined){  
+          if(input[0] !== undefined && input.data('result') !== undefined){
             addressfieldAutocompleteUpdateAddress(input);
-          }  
+          }
         }
       }
     }
