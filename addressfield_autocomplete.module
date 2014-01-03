@@ -154,7 +154,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       case 'Map':
         $gmap_defaults['maptype'] = 'roadmap';
         break;
-      
+
       case 'Physical':
         $gmap_defaults['maptype'] = 'terrain';
         break;

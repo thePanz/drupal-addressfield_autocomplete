@@ -103,7 +103,7 @@
     location = gmapSettings.latlong.split(','),
     marker = o.geocomplete('marker'),
     latLng = new google.maps.LatLng(location[0], location[1]);
-    
+
     if (map){
       map.setCenter(latLng);
       map.setZoom(parseInt(gmapSettings.zoom));
@@ -249,7 +249,7 @@
         }
       });
     }
- 
+
     /*
      * The information below will be updated regardless of what method we are
      * using.
