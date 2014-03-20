@@ -17,7 +17,7 @@
     lat = widget.find('.latitude').val(),
     lng = widget.find('.longitude').val(),
     zoom = parseInt(widget.find('.zoom').val()),
-    location
+    location,
     options = {};
 
     if(settings.map){
@@ -76,6 +76,7 @@
        * addressfield widget has a select for country.
        */
       $(this).data('result', result);
+      $(this).addClass('complete');
       addressfieldAutocompleteToggleWidget($(this));
       addressfieldAutocompleteUpdateAddress($(this));
     })
@@ -111,7 +112,7 @@
     if (marker){
       marker.setPosition(latLng);
     }
-  }
+  };
   /**
    * Reveal the addressfield widget
    */
@@ -125,6 +126,7 @@
      */
     if(!!settings.reveal){
       widget.find('.addressfield-autocomplete-reveal').remove();
+
       if (reveal.val() == 0) {
         reveal.val(1);
         reveal.trigger('change');
@@ -137,6 +139,7 @@
         reveal.val(0);
         reveal.trigger('change');
       }
+      
       /*
        * Add a reset link to a manual address.
        */
@@ -183,7 +186,7 @@
     }
   };
   var addressfieldAutocompleteUpdateAddress = function(o){
-    var data = {}
+    var data = {},
     settings = o.data('settings'),
     widget = o.data('widget'),
     map = o.data('map'),
