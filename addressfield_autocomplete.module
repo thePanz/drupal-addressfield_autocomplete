@@ -304,7 +304,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         '#required' => $delta == 0 && !$form_ui ? $instance['required'] : FALSE,
         '#default_value' => $default_value ? $formatted_address : '',
         '#maxlength' => 200,
-        '#description' => check_plain($instance['description']),
+        '#description' => field_filter_xss($instance['description']),
         '#attributes' => array(
           'placeholder' => '',
           'class' => array('addressfield-autocomplete-input'),
