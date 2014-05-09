@@ -5,60 +5,67 @@
  * Js to allow user to pick an autocompleted address from
  */
 
-(function($, Drupal) {
+(function($) {
   /**
    * Initialise the geocomplete js
    */
-  var addressfieldAutocompleteInit = function(o, settings){
+  var addressfieldAutocompleteInit = function(o, settings) {
     var gmapSettings = Drupal.settings.addressfield_autocomplete.gmap,
-    widget = o.closest('.form-item').siblings('div[id^="addressfield-wrapper"]:first'),
-    reveal = o.closest('.form-item').prev('.addressfield-autocomplete-hidden-reveal'),
-    link = o.closest('.form-item').siblings('.addressfield-autocomplete-link:first').find('a'),
-    lat = widget.find('.latitude').val(),
-    lng = widget.find('.longitude').val(),
-    zoom = parseInt(widget.find('.zoom').val()),
-    location,
-    options = {};
+            widget = o.closest('.form-item').siblings('div[id^="addressfield-wrapper"]:first'),
+            reveal = o.closest('.form-item').prev('.addressfield-autocomplete-hidden-reveal'),
+            link = o.closest('.form-item').siblings('.addressfield-autocomplete-link:first').find('a'),
+            lat = widget.find('.latitude').val(),
+            lng = widget.find('.longitude').val(),
+            zoom = parseInt(widget.find('.zoom').val()),
+            location,
+            options = {};
 
-    if(settings.map){
+    if (settings.map) {
       var map = o.closest('.form-item').siblings('.autocomplete-map');
       settings.map_id = map.attr('id');
     }
-    if(lat != 0 && lng != 0){
+    if (lat != 0 && lng != 0) {
       location = [lat, lng];
     }
     /**
      * Set data inside the object so it can be used in other functions.
      */
     o.data({
-      'settings' : settings,
-      'widget' : widget,
-      'reveal' : reveal,
-      'link' : link,
-      'map' : map
+      'settings': settings,
+      'widget': widget,
+      'reveal': reveal,
+      'link': link,
+      'map': map
     });
     /**
      * Set the default options for google maps, places and geocomplete.
      */
     options = {
-      map : !!settings.map ? "#" + settings.map_id : false,
-      mapOptions : {
-        mapTypeId : gmapSettings.maptype,
-        zoom : location && zoom ? zoom : parseInt(gmapSettings.zoom),
-        disableDefaultUI : gmapSettings.controltype == 'None' ? true : false,
-        panControl : !!gmapSettings.pancontrol
+      map: !!settings.map ? "#" + settings.map_id : false,
+      mapOptions: {
+        mapTypeId: gmapSettings.maptype,
+        zoom: location && zoom ? zoom : parseInt(gmapSettings.zoom),
+        disableDefaultUI: gmapSettings.controltype == 'None',
+        panControl: !!gmapSettings.pancontrol
       },
-      markerOptions : {
-        draggable : !!settings.draggable,
-        visible : !!settings.visible_markers
+      markerOptions: {
+        draggable: !!settings.draggable,
+        visible: !!settings.visible_markers
       },
-      maxZoom : parseInt(gmapSettings.maxzoom),
-      location : location ? location : gmapSettings.latlong.split(','),
-      types : settings.types
+      maxZoom: parseInt(gmapSettings.maxzoom),
+      location: location ? location : gmapSettings.latlong.split(','),
+      types: settings.types
     };
 
-    if(Object.size(settings.available_countries) == 1){
-      for(var country in settings.available_countries) break;
+    if (Object.size(settings.available_countries) == 1) {
+      /**
+       * For now the google api only accepts one country, because the available
+       * countries are inside an object we had to use a loop to get the first
+       * item in that object.
+       */
+      for (var country in settings.available_countries)
+        break;
+
       var componentRestrictions = {
         componentRestrictions: {
           country: settings.available_countries[country]
@@ -67,8 +74,7 @@
       $.extend(options, componentRestrictions);
     }
 
-    o.geocomplete(options)
-    .bind("geocode:result", function(event, result){
+    o.geocomplete(options).bind("geocode:result", function(event, result) {
       /*
        * Reveal the standard addressfield widget.
        * Update the widget, we have to do it this way instead
@@ -79,17 +85,24 @@
       $(this).addClass('complete');
       addressfieldAutocompleteToggleWidget($(this));
       addressfieldAutocompleteUpdateAddress($(this));
-    })
-    .bind("geocode:dragged", function(event, result){
+
+    }).bind("geocode:dragged", function(event, result) {
       var widget = $(this).data('widget');
       widget.find('.latitude').val(result.lat());
       widget.find('.longitude').val(result.lng());
     });
     /**
+     * If the widget contains the class error we want to reveal the widget so
+     * that they can see the fields that are missing.
+     */
+    if ($('.form-item .error', widget).length > 0) {
+      reveal.val(1);
+    }
+    /**
      * Upon addressfieldAutocompleteInitalisation if reveal is set it to 1, set
      * it to 0 and toggle widget to trigger reset link.
      */
-    if(reveal.val() == 1){
+    if (reveal.val() == 1) {
       reveal.val(0);
       o.addClass('complete');
       addressfieldAutocompleteToggleWidget(o);
@@ -98,39 +111,39 @@
   /**
    * Set map defaults
    */
-  var addressfieldAutocompleteResetMap = function(o){
+  var addressfieldAutocompleteResetMap = function(o) {
     var gmapSettings = Drupal.settings.addressfield_autocomplete.gmap,
-    map = o.geocomplete('map'),
-    location = gmapSettings.latlong.split(','),
-    marker = o.geocomplete('marker'),
-    latLng = new google.maps.LatLng(location[0], location[1]);
+            map = o.geocomplete('map'),
+            location = gmapSettings.latlong.split(','),
+            marker = o.geocomplete('marker'),
+            latLng = new google.maps.LatLng(location[0], location[1]);
 
-    if (map){
+    if (map) {
       map.setCenter(latLng);
       map.setZoom(parseInt(gmapSettings.zoom));
     }
-    if (marker){
+    if (marker) {
       marker.setPosition(latLng);
     }
   };
   /**
    * Reveal the addressfield widget
    */
-  var addressfieldAutocompleteToggleWidget = function(o){
+  var addressfieldAutocompleteToggleWidget = function(o) {
     var reveal = o.data('reveal'),
-    widget = o.data('widget'),
-    settings = o.data('settings'),
-    link = o.data('link');
+            widget = o.data('widget'),
+            settings = o.data('settings'),
+            link = o.data('link');
     /*
      * If the reveal value is set to 0 the widget is not shown.
      */
-    if(!!settings.reveal){
+    if (!!settings.reveal) {
       widget.find('.addressfield-autocomplete-reveal').remove();
 
       if (reveal.val() == 0) {
         reveal.val(1);
         reveal.trigger('change');
-      } else if(o.hasClass('manual-remove')) {
+      } else if (o.hasClass('manual-remove')) {
         // Reset all values back to zero
         o.removeClass('manual-add manual-remove').val('');
         o.removeData('result');
@@ -139,11 +152,11 @@
         reveal.val(0);
         reveal.trigger('change');
       }
-      
+
       /*
        * Add a reset link to a manual address.
        */
-      if(o.hasClass('manual-add') || o.hasClass('complete')){
+      if (o.hasClass('manual-add') || o.hasClass('complete')) {
         o.removeClass('complete');
         link = link.clone(true).text(Drupal.t('Reset address'));
         link.attr('id', o.attr('id')).appendTo(widget);
@@ -151,19 +164,19 @@
     }
     return widget;
   };
-  var addressfieldAutocompleteManualAddressGeocode = function(o, data){
+  var addressfieldAutocompleteManualAddressGeocode = function(o, data) {
     var widget = o.closest('div[id^="addressfield-wrapper"]'),
-    input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input'),
-    address = [];
-    if(data === undefined){
+            input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input'),
+            address = [];
+    if (data === undefined) {
       input.removeClass('reverse-geocode').addClass('manual-add');
     }
-    if(input.hasClass('manual-add') && !input.hasClass('reverse-geocode')){
+    if (input.hasClass('manual-add') && !input.hasClass('reverse-geocode')) {
       /*
        * If we manually add an address and we change the country
        * then we want to remove all other fields
        */
-      if(o.hasClass('country')){
+      if (o.hasClass('country')) {
         widget.find('input,select.state').val('');
       }
       /*
@@ -172,11 +185,11 @@
        * geocomplete find, this will hopefully return a result and
        * updated our latitude, longitude and zoom values.
        */
-      widget.find('input[type="text"],select').each(function(){
-        if($(this).val().length > 0){
-          if($(this).is('input')){
+      widget.find('input[type="text"],select').each(function() {
+        if ($(this).val().length > 0) {
+          if ($(this).is('input')) {
             address.push($(this).val());
-          }else{
+          } else {
             address.push($(this).find('option:selected').text());
           }
         }
@@ -185,29 +198,29 @@
       input.geocomplete('find');
     }
   };
-  var addressfieldAutocompleteUpdateAddress = function(o){
+  var addressfieldAutocompleteUpdateAddress = function(o) {
     var data = {},
-    settings = o.data('settings'),
-    widget = o.data('widget'),
-    map = o.data('map'),
-    result = o.data('result');
+            settings = o.data('settings'),
+            widget = o.data('widget'),
+            map = o.data('map'),
+            result = o.data('result');
     /*
      * Load all of the address details obtained by the geocomplete
      * into a data array to be used later.
      */
-    $.each(result.address_components, function(index, object){
+    $.each(result.address_components, function(index, object) {
       var name = object.types[0];
       data[name] = object.long_name;
       data[name + "_short"] = object.short_name;
     });
-    if(result.geometry.location !== undefined){
+    if (result.geometry.location !== undefined) {
       data['lat'] = result.geometry.location.lat();
       data['lng'] = result.geometry.location.lng();
     }
     /*
      * Only update if not manually adding an address or reverse geocoding
      */
-    if(!o.hasClass('manual-add') || o.hasClass('reverse-geocode')){
+    if (!o.hasClass('manual-add') || o.hasClass('reverse-geocode')) {
       /*
        * Clear all data before commencing the update
        */
@@ -217,11 +230,11 @@
        * If not we need to trigger the change.
        */
       var country = widget.find('select.country:first');
-      if(data.country_short !== country.val()){
+      if (data.country_short !== country.val()) {
         country.val(data.country_short);
         country.trigger('change', [{
-          update:true
-        }]);
+            update: true
+          }]);
       }
       /*
        * If the change has been triggered because the addressfield
@@ -234,17 +247,17 @@
        * add multiple values to the same field. We then replace the
        * value with the data value.
        */
-      $.each(widget.find('[data-geo]'), function(){
+      $.each(widget.find('[data-geo]'), function() {
         var object = $(this);
         var geo = object.data('geo').split(" ");
-        for(var i = 0; i < geo.length; i++){
-          if(data[geo[i]] !== undefined){
-            if(geo[i] == 'street_number' || geo[i] == 'route'){
+        for (var i = 0; i < geo.length; i++) {
+          if (data[geo[i]] !== undefined) {
+            if (geo[i] == 'street_number' || geo[i] == 'route') {
               i >= 1 ? $(this).val($(this).val() + " " + data[geo[i]]) : $(this).val(data[geo[i]]);
-            }else{
+            } else {
               $(this).val(data[geo[i]]);
               // If select and value is not empty
-              if($(this).is('select') && $(this).val().length > 0){
+              if ($(this).is('select') && $(this).val().length > 0) {
                 break;
               }
             }
@@ -259,39 +272,26 @@
      */
     widget.find('[data-geo="lat"]').val(data['lat']);
     widget.find('[data-geo="lng"]').val(data['lng']);
-    if(settings.map){
+    if (settings.map) {
       var mapObject = o.geocomplete('map');
       widget.find('.zoom').val(mapObject.getZoom());
       /*
        * Show the map if hidden, also need to run place changed because
        * otherwise the map can have visibility problems.
        */
-      if(!map.is(':visible')){
+      if (!map.is(':visible')) {
         map.show();
         o.geocomplete('placeChanged');
       }
     }
   };
 
-  /**
-   * Get length of object.
-   */
-  Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
-      if (obj.hasOwnProperty(key)){
-        size++;
-      }
-    }
-    return size;
-  };
-
   Drupal.behaviors.addressfield_autocomplete = {
     attach: function(context, settings) {
       for (var key in Drupal.settings.addressfield_autocomplete.fields) {
         var field = Drupal.settings.addressfield_autocomplete.fields[key];
-        if (field.hasOwnProperty('map')){
-          $('.addressfield-autocomplete-input[name^="' + key + '["]').each(function(){
+        if (field.hasOwnProperty('map')) {
+          $('.addressfield-autocomplete-input[name^="' + key + '["]').each(function() {
             addressfieldAutocompleteInit($(this), field);
           });
         }
@@ -302,25 +302,24 @@
        * address if they can't find one using the addressfield
        * autocomplete widget.
        */
-      $('.addressfield-autocomplete-reveal').once()
-      .bind('mousedown', function(e) {
+      $('.addressfield-autocomplete-reveal').once().bind('mousedown', function(e) {
         e.stopPropagation();
         var o;
         if ($(this).attr('id')) {
           o = $("#" + $(this).attr('id'));
-          if($(this).hasClass('manual-add')){
+          if ($(this).hasClass('manual-add')) {
             /*
              * This is to provide manual addition of an anddress from
              * the link inside the pac container.
              */
             o.addClass('manual-add');
-          }else{
+          } else {
             /*
              * This is to reset back to the geocomplete field.
              */
             o.removeClass('manual-add').addClass('manual-remove');
           }
-        }else{
+        } else {
           o = $(this).parent().prev('.form-item').find('.addressfield-autocomplete-input');
           o.addClass('manual-add');
           /*
@@ -335,7 +334,7 @@
            * longitude values which it can then process into an address.
            */
           if (!!o.data('settings').reverse_geocode && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position){
+            navigator.geolocation.getCurrentPosition(function(position) {
               var lat = position.coords.latitude;
               var lng = position.coords.longitude;
               o.addClass('reverse-geocode');
@@ -380,11 +379,25 @@
          */
         if (context[0] !== undefined && context.has('[id^="addressfield-wrapper"]')) {
           var input = context.prevAll('.form-item').find('.addressfield-autocomplete-input');
-          if(input[0] !== undefined && input.data('result') !== undefined){
+          if (input[0] !== undefined && input.data('result') !== undefined) {
             addressfieldAutocompleteUpdateAddress(input);
           }
         }
       }
     }
   };
-})(jQuery, Drupal);
+
+  /**
+   * Get length of object.
+   */
+  Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        size++;
+      }
+    }
+    return size;
+  };
+
+})(jQuery);

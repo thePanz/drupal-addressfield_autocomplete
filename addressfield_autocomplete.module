@@ -276,15 +276,18 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       }
     }
     // Map markup.
-    $map = '<div class="clearfix autocomplete-map" ';
-    $map .= 'id="' . drupal_html_id('addressfield-autocomplete-map') . '" ';
-    $map .= 'style="width: ' . $gmap_defaults['width'] . ';';
-    $map .= 'height:' . $gmap_defaults['height'] . ';">';
-    $map .= '</div>';
-    // Link markup.
-    $link = '<a href="javascript: void(0);" class="addressfield-autocomplete-reveal">';
-    $link .= t('Enter one manually');
-    $link .= '</a>';
+    $map_variables = array(
+      'attributes' => array(
+        'id' => drupal_html_id('addressfield-autocomplete-map'),
+        'style' => 'width:' . $gmap_defaults['width'] . ';height:' . $gmap_defaults['height'],
+      ),
+    );
+    $link_variables = array(
+      'external' => TRUE,
+      'attributes' => array(
+        'class' => array('addressfield-autocomplete-reveal'),
+      ),
+    );
 
     $element += array(
       '#element_validate' => array(
@@ -328,7 +331,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
           ),
         ),
         'link' => array(
-          '#markup' => $link,
+          '#markup' => l(t('Enter one manually'), 'javascript:void(0);', $link_variables),
         ),
       ),
       'widget' => array(
@@ -342,7 +345,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       ),
       'map' => array(
         '#access' => $settings['map'],
-        '#markup' => $map,
+        '#markup' => theme('addressfield_autocomplete_map', $map_variables),
         '#weight' => 11,
       ),
     );
@@ -358,8 +361,33 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
 }
 
 /**
+ * Implementation of hook_theme().
+ */
+function addressfield_autocomplete_theme() {
+  return array(
+    'addressfield_autocomplete_map' => array(
+      'variables' => array(
+        'attributes' => array(
+          'class' => array('autocomplete-map', 'clearfix'),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Render a container for a set of address fields.
+ */
+function theme_addressfield_autocomplete_map($variables) {
+  $attributes = $variables['attributes'];
+  $attributes['class'][] = 'autocomplete-map';
+  $attributes['class'][] = 'clearfix';
+  return '<div' . drupal_attributes($attributes) . '></div>';
+}
+
+/**
  * Addressfield autocomplete transform.
- * 
+ *
  * Transforms data into the structure accepted by addressfield.
  */
 function _addressfield_autocomplete_widget_transform($element, &$form_state, $form) {
@@ -378,8 +406,7 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
     }
     $address = $values['widget'];
     $address['data'] = serialize($data);
-  }
-  else {
+  } else {
     $address = array();
   }
   $values = $address;
@@ -387,7 +414,7 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
 
 /**
  * Address autocomplete widget validation function.
- * 
+ *
  * Validate to see if lat and lng have been added for addresses which
  * do not reveal the widget.
  */
