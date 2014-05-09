@@ -406,7 +406,8 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
     }
     $address = $values['widget'];
     $address['data'] = serialize($data);
-  } else {
+  }
+  else {
     $address = array();
   }
   $values = $address;

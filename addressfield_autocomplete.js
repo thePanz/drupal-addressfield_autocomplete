@@ -63,8 +63,9 @@
        * countries are inside an object we had to use a loop to get the first
        * item in that object.
        */
-      for (var country in settings.available_countries)
+      for (var country in settings.available_countries) {
         break;
+      }
 
       var componentRestrictions = {
         componentRestrictions: {
@@ -143,7 +144,8 @@
       if (reveal.val() == 0) {
         reveal.val(1);
         reveal.trigger('change');
-      } else if (o.hasClass('manual-remove')) {
+      }
+      else if (o.hasClass('manual-remove')) {
         // Reset all values back to zero
         o.removeClass('manual-add manual-remove').val('');
         o.removeData('result');
@@ -189,7 +191,8 @@
         if ($(this).val().length > 0) {
           if ($(this).is('input')) {
             address.push($(this).val());
-          } else {
+          }
+          else {
             address.push($(this).find('option:selected').text());
           }
         }
@@ -254,7 +257,8 @@
           if (data[geo[i]] !== undefined) {
             if (geo[i] == 'street_number' || geo[i] == 'route') {
               i >= 1 ? $(this).val($(this).val() + " " + data[geo[i]]) : $(this).val(data[geo[i]]);
-            } else {
+            }
+            else {
               $(this).val(data[geo[i]]);
               // If select and value is not empty
               if ($(this).is('select') && $(this).val().length > 0) {
@@ -313,13 +317,15 @@
              * the link inside the pac container.
              */
             o.addClass('manual-add');
-          } else {
+          }
+          else {
             /*
              * This is to reset back to the geocomplete field.
              */
             o.removeClass('manual-add').addClass('manual-remove');
           }
-        } else {
+        }
+        else {
           o = $(this).parent().prev('.form-item').find('.addressfield-autocomplete-input');
           o.addClass('manual-add');
           /*
