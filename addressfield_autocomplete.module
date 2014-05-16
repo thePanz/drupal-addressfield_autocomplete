@@ -345,6 +345,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       ),
       'map' => array(
         '#access' => $settings['map'],
+        '#prefix' => '<div class="clearfix"></div>',
         '#markup' => theme('addressfield_autocomplete_map', $map_variables),
         '#weight' => 11,
       ),
@@ -361,7 +362,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function addressfield_autocomplete_theme() {
   return array(

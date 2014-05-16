@@ -377,7 +377,7 @@
       /*
        * Methods to update the address after an ajax callback.
        */
-      if (context) {
+      if (context.length) {
         /*
          * When we trigger a change on the addressfield country
          * select this will be returned. As new fields may have
