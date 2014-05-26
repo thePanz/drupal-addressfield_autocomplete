@@ -110,6 +110,17 @@
       }
     });
     /*
+     * If the map is inside a fieldset then we need to register events to make
+     * sure the map resizes itself when that fieldset is revealed.
+     */
+    if (!!settings.map) {
+      var fieldsets = o.closest('fieldset.collapsible').find('legend a');
+      var verticalTabs =  o.closest('.vertical-tabs').find('.vertical-tabs-list a');
+      fieldsets.add(verticalTabs).bind('click', function() {
+        addressfieldAutocompleteResetMap(o);
+      });
+    }
+    /*
      * If the widget contains the class error we want to reveal the widget so
      * that they can see the fields that are missing.
      */
