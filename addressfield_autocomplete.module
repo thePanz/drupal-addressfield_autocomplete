@@ -266,9 +266,11 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       }
     }
     if ($delta > 0) {
-      // On subsequent elements of a field, we make the country field non
-      // required and add a ' - None - ' option to it, so as to allow the
-      // user to remove the address by clearing the country field.
+      /*
+       * On subsequent elements of a field, we make the country field non
+       * required and add a ' - None - ' option to it, so as to allow the
+       * user to remove the address by clearing the country field.
+       */
       $address_field['country']['#required'] = TRUE;
       $address_field['country']['#empty_value'] = '';
       if ($lat == 0 && $lng == 0) {
@@ -290,74 +292,81 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     );
 
     $element += array(
-      '#element_validate' => array(
-        '_addressfield_autocomplete_widget_transform',
-      ),
-      'reveal' => array(
-        '#type' => 'hidden',
-        '#default_value' => $default_value && $settings['reveal'] ? 1 : 0,
-        '#attributes' => array(
-          'class' => array('addressfield-autocomplete-hidden-reveal'),
-          'autocomplete' => 'off',
-        ),
-      ),
-      'autocomplete' => array(
-        '#type' => 'textfield',
-        '#title' => t('Address'),
-        '#required' => $delta == 0 && !$form_ui ? $instance['required'] : FALSE,
-        '#default_value' => $default_value ? $formatted_address : '',
-        '#maxlength' => 200,
-        '#description' => field_filter_xss($instance['description']),
-        '#attributes' => array(
-          'placeholder' => '',
-          'class' => array('addressfield-autocomplete-input'),
-          'autocomplete' => 'off',
-        ),
-        '#states' => array(
-          'visible' => array(
-            ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
-          ),
-        ),
-      ),
-      'link_container' => array(
+      $element['#field_name'] => array(
         '#type' => 'container',
-        '#access' => $settings['reveal'],
-        '#attributes' => array(
-          'class' => array('addressfield-autocomplete-link'),
+        '#element_validate' => array(
+          '_addressfield_autocomplete_widget_transform',
         ),
-        '#states' => array(
-          'visible' => array(
-            ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
+        'reveal' => array(
+          '#type' => 'hidden',
+          '#default_value' => $default_value && $settings['reveal'] ? 1 : 0,
+          '#attributes' => array(
+            'class' => array('addressfield-autocomplete-hidden-reveal'),
+            'autocomplete' => 'off',
           ),
         ),
-        'link' => array(
-          '#markup' => l(t('Enter one manually'), 'javascript:void(0);', $link_variables),
-        ),
-      ),
-      'widget' => array(
-        '#type' => 'container',
-        '#weight' => 10,
-        '#states' => array(
-          'visible' => array(
-            ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
+        'autocomplete' => array(
+          '#type' => 'textfield',
+          '#title' => t('Address'),
+          '#required' => $delta == 0 && !$form_ui ? $instance['required'] : FALSE,
+          '#default_value' => $default_value ? $formatted_address : '',
+          '#maxlength' => 200,
+          '#description' => field_filter_xss($instance['description']),
+          '#attributes' => array(
+            'placeholder' => '',
+            'class' => array('addressfield-autocomplete-input'),
+            'autocomplete' => 'off',
+          ),
+          '#states' => array(
+            'visible' => array(
+              ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
+            ),
           ),
         ),
-      ),
-      'map' => array(
-        '#access' => $settings['map'],
-        '#prefix' => '<div class="clearfix"></div>',
-        '#markup' => theme('addressfield_autocomplete_map', $map_variables),
-        '#weight' => 11,
+        'link_container' => array(
+          '#type' => 'container',
+          '#access' => $settings['reveal'],
+          '#attributes' => array(
+            'class' => array('addressfield-autocomplete-link'),
+          ),
+          '#states' => array(
+            'visible' => array(
+              ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
+            ),
+          ),
+          'link' => array(
+            '#markup' => l(t('Enter one manually'), 'javascript:void(0);', $link_variables),
+          ),
+        ),
+        'widget' => array(
+          '#type' => 'container',
+          '#weight' => 10,
+          '#states' => array(
+            'visible' => array(
+              ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
+            ),
+          ),
+        ),
+        'map' => array(
+          '#access' => $settings['map'],
+          '#prefix' => '<div class="clearfix"></div>',
+          '#markup' => theme('addressfield_autocomplete_map', $map_variables),
+          '#weight' => 11,
+        ),
       ),
     );
+
     if (!$settings['reveal']) {
-      $element['widget']['#attributes']['class'] = array('element-invisible');
-      if ($instance['required'] && $delta == 0 && !$form_ui) {
-        $element['#element_validate'][] = '_addressfield_autocomplete_widget_validate';
-      }
+      $element[$element['#field_name']]['widget']['#attributes']['class'] = array('element-invisible');
     }
-    $element['widget'] += $address_field;
+
+    if ($instance['required'] && $delta == 0 && !$form_ui) {
+      $element[$element['#field_name']]['#element_validate'][] = '_addressfield_autocomplete_widget_validate';
+    }
+
+    $element[$element['#field_name']]['widget'] += $address_field;
   }
+
   return $element;
 }
 
@@ -392,10 +401,9 @@ function theme_addressfield_autocomplete_map($variables) {
  * Transforms data into the structure accepted by addressfield.
  */
 function _addressfield_autocomplete_widget_transform($element, &$form_state, $form) {
-  $values = &$form_state['values'];
-  foreach ($element['#parents'] as $parent) {
-    $values = &$values[$parent];
-  }
+  $parents = $element['#parents'];
+  $values = drupal_array_get_nested_value($form_state['values'], $parents);
+
   $data = $address = array();
   if (!empty($values['autocomplete'])) {
     $data['latitude'] = $values['widget']['latitude'];
@@ -407,11 +415,11 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
     }
     $address = $values['widget'];
     $address['data'] = serialize($data);
-  }
-  else {
+  } else {
     $address = array();
   }
-  $values = $address;
+  array_pop($parents);
+  drupal_array_set_nested_value($form_state['values'], $parents, $address);
 }
 
 /**
@@ -421,10 +429,10 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
  * do not reveal the widget.
  */
 function _addressfield_autocomplete_widget_validate($element, &$form_state, $form) {
-  $values = $form_state['values'];
-  foreach ($element['#parents'] as $parent) {
-    $values = $values[$parent];
-  }
+  $parents = $element['#parents'];
+  array_pop($parents);
+  $values = drupal_array_get_nested_value($form_state['values'], $parents);
+
   $data = unserialize($values['data']);
   if (empty($data['latitude']) && empty($data['latitude'])) {
     form_error($element, t('This address is invalid please try again.'));
@@ -444,7 +452,7 @@ function _addressfield_autocomplete_get_name(&$element) {
   $name = array_shift($element['#field_parents']);
   $element['#name'] = $name;
   if (count($element['#field_parents'])) {
-    $element['#name'] .= '[' . implode('][', $element['#field_parents']) . ']';
+    $element['#name'] .= '[' . implode('][', array_merge($element['#field_parents'], array($element['#field_name']))) . ']';
   }
   array_unshift($element['#field_parents'], $name);
   return $element['#name'];

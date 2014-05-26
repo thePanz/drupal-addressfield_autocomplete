@@ -17,7 +17,8 @@
             lat = widget.find('.latitude').val(),
             lng = widget.find('.longitude').val(),
             zoom = parseInt(widget.find('.zoom').val()),
-            location,
+            location = gmapSettings.latlong.split(','),
+            center = new google.maps.LatLng(location[0], location[1]),
             options = {};
 
     if (settings.map) {
@@ -27,7 +28,8 @@
     if (lat != 0 && lng != 0) {
       location = [lat, lng];
     }
-    /**
+
+    /*
      * Set data inside the object so it can be used in other functions.
      */
     o.data({
@@ -37,12 +39,13 @@
       'link': link,
       'map': map
     });
-    /**
+    /*
      * Set the default options for google maps, places and geocomplete.
      */
     options = {
       map: !!settings.map ? "#" + settings.map_id : false,
       mapOptions: {
+        center: center,
         mapTypeId: gmapSettings.maptype,
         zoom: location && zoom ? zoom : parseInt(gmapSettings.zoom),
         disableDefaultUI: gmapSettings.controltype == 'None',
@@ -92,7 +95,21 @@
       widget.find('.latitude').val(result.lat());
       widget.find('.longitude').val(result.lng());
     });
-    /**
+
+    /*
+     * If states hide this field to begin with we may have issues with the map
+     * needing to be resized. So we need to bind the change.
+     */
+    o.closest('.form-wrapper').bind('state:visible', function(e) {
+      if (e.trigger) {
+        var isVisible = o.closest('.form-wrapper').is(':visible');
+        $(e.target).closest('.form-item, .form-submit, .form-wrapper').toggle(e.value);
+        if (!isVisible) {
+          addressfieldAutocompleteResetMap(o);
+        }
+      }
+    });
+    /*
      * If the widget contains the class error we want to reveal the widget so
      * that they can see the fields that are missing.
      */
@@ -113,19 +130,19 @@
    * Set map defaults
    */
   var addressfieldAutocompleteResetMap = function(o) {
-    var gmapSettings = Drupal.settings.addressfield_autocomplete.gmap,
-            map = o.geocomplete('map'),
-            location = gmapSettings.latlong.split(','),
-            marker = o.geocomplete('marker'),
-            latLng = new google.maps.LatLng(location[0], location[1]);
+    var map = o.geocomplete('map'),
+            marker = o.geocomplete('marker');
 
     if (map) {
-      map.setCenter(latLng);
-      map.setZoom(parseInt(gmapSettings.zoom));
+      var center = map.getCenter();
+      google.maps.event.trigger(map, 'resize');
+      map.setCenter(center);
+      map.setZoom(map.getZoom());
+      if (marker) {
+        marker.setPosition(center);
+      }
     }
-    if (marker) {
-      marker.setPosition(latLng);
-    }
+
   };
   /**
    * Reveal the addressfield widget
