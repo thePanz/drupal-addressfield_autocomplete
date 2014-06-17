@@ -398,7 +398,7 @@
       $(document).delegate('.addressfield-autocomplete-input', 'keydown', function() {
         $(".pac-container").find(".addressfield-autocomplete-reveal").remove();
         var link = $(this).data('link');
-        link = link.clone(true).text(Drupal.t('Can\'t find your location?'));
+        link = link.clone(true).text(Drupal.t($(this).data('settings').manual_text));
         link.addClass('manual-add');
         link.attr('id', $(this).attr('id')).appendTo(".pac-container");
       });

@@ -67,6 +67,7 @@ function addressfield_autocomplete_field_widget_info() {
         'format_handlers' => array('address'),
         'map' => TRUE,
         'reveal' => TRUE,
+        'manual_text' => 'Enter one manually',
         'visible_markers' => TRUE,
         'draggable' => TRUE,
         'geolocation' => TRUE,
@@ -115,6 +116,17 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
     '#title' => t('Reveal widget'),
     '#description' => t('Reveal the addressfield widget after the geocomplete has returned an address.'),
     '#default_value' => $settings['reveal'],
+  );
+  $form['manual_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Manual text'),
+    '#description' => t('The text to display for the link to enter an address manually.'),
+    '#default_value' => $settings['manual_text'],
+    '#states' => array(
+      'visible' => array(
+        ':input[name="instance[widget][settings][reveal]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['visible_markers'] = array(
     '#type' => 'checkbox',
@@ -335,7 +347,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
             ),
           ),
           'link' => array(
-            '#markup' => l(t('Enter one manually'), 'javascript:void(0);', $link_variables),
+            '#markup' => l(t($settings['manual_text']), 'javascript:void(0);', $link_variables),
           ),
         ),
         'widget' => array(
@@ -415,7 +427,8 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
     }
     $address = $values['widget'];
     $address['data'] = serialize($data);
-  } else {
+  }
+  else {
     $address = array();
   }
   array_pop($parents);
