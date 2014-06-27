@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the addressfield
- * autcomplete module.
+ * Requirements function for the addressfield autcomplete module.
  */
 
 /**
