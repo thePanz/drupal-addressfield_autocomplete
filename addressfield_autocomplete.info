@@ -4,4 +4,4 @@ package = Other
 core = 7.x
 dependencies[] = addressfield
 dependencies[] = gmap
-dependencies[] = libraries (>1.0)
+dependencies[] = libraries

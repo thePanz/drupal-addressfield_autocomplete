@@ -24,10 +24,10 @@ function addressfield_autocomplete_libraries_info() {
   $libraries['geocomplete'] = array(
     'name' => 'Geocomplete',
     'vendor url' => 'http://ubilabs.github.io/geocomplete/',
-    'download url' => 'https://github.com/ubilabs/geocomplete/tarball/master',
+    'download url' => 'https://github.com/ubilabs/geocomplete/archive/master.zip',
     'version arguments' => array(
       'file' => 'jquery.geocomplete.js',
-      'pattern' => '/V\s+([0-9\.\ -]+)/',
+      'pattern' => '/V\s+([0-9\.\ \-]+)/',
       'lines' => 5,
     ),
     'files' => array(
@@ -67,7 +67,7 @@ function addressfield_autocomplete_field_widget_info() {
         'format_handlers' => array('address'),
         'map' => TRUE,
         'reveal' => TRUE,
-        'manual_text' => 'Enter one manually',
+        'manual_text' => t('Enter one manually'),
         'visible_markers' => TRUE,
         'draggable' => TRUE,
         'geolocation' => TRUE,
@@ -154,6 +154,24 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
     '#default_value' => $settings['types'],
   );
   return $form;
+}
+
+/**
+ * Implements hook_help().
+ */
+function addressfield_autocomplete_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#addressfield_autocomplete':
+      $output = '';
+      $output .= '<p>' . t('<a href="@project_page">Addressfield autocomplete</a> provides a hook into google maps autocomplete API.', array('@project_page' => 'http://drupal.org/project/addressfield_autocomplete')) . '</p>';
+      $output .= '<h2>' . t('Usage') . '</h2>';
+      $output .= '<p>' . t('Implements a new widget which utilises the addressfield field type and provides an easy to use single box for entering an address') . '</p>';
+      $output .= '<h2>' . t('Configuration') . '</h2>';
+      $output .= '<p>' . t('The configuration is done on each field instance, choose the address autocomplete widget on an addressfield type and the settings will be made available inside the field ui.') . '</p>';
+      $output .= '<h3>' . t('Options') . '</h3>';
+      $output .= '<p>' . t('The options include, but are not limited to: specific country searches, disabling the map, adding draggable markers, using browser geolocation and place type searches.') . '</p>';
+      return $output;
+  }
 }
 
 /**
@@ -347,7 +365,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
             ),
           ),
           'link' => array(
-            '#markup' => l(t($settings['manual_text']), 'javascript:void(0);', $link_variables),
+            '#markup' => l(t('@manual_text', array('@manual_text' => $settings['manual_text'])), 'javascript:void(0);', $link_variables),
           ),
         ),
         'widget' => array(
@@ -361,7 +379,6 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         ),
         'map' => array(
           '#access' => $settings['map'],
-          '#prefix' => '<div class="clearfix"></div>',
           '#markup' => theme('addressfield_autocomplete_map', $map_variables),
           '#weight' => 11,
         ),

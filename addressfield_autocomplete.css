@@ -18,6 +18,7 @@
 }
 div.autocomplete-map {
   margin-top: 20px;
+  clear:both;
 }
 div.autocomplete-map img {
   max-width: none;

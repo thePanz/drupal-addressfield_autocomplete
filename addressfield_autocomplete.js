@@ -320,8 +320,8 @@
 
   Drupal.behaviors.addressfield_autocomplete = {
     attach: function(context, settings) {
-      for (var key in Drupal.settings.addressfield_autocomplete.fields) {
-        var field = Drupal.settings.addressfield_autocomplete.fields[key];
+      for (var key in settings.addressfield_autocomplete.fields) {
+        var field = settings.addressfield_autocomplete.fields[key];
         if (field.hasOwnProperty('map')) {
           $('.addressfield-autocomplete-input[name^="' + key + '["]').each(function() {
             addressfieldAutocompleteInit($(this), field);
