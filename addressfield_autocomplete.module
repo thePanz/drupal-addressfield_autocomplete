@@ -479,7 +479,7 @@ function _addressfield_autocomplete_widget_validate($element, &$form_state, $for
 /**
  * Get the name of the element based upon the field, lanaguage and delta.
  */
-function _addressfield_autocomplete_get_name(&$element) {
+function _addressfield_autocomplete_get_name($element) {
   $field = array(
     $element['#field_name'],
     $element['#language'],
@@ -492,5 +492,6 @@ function _addressfield_autocomplete_get_name(&$element) {
     $element['#name'] .= '[' . implode('][', array_merge($element['#field_parents'], array($element['#field_name']))) . ']';
   }
   array_unshift($element['#field_parents'], $name);
+
   return $element['#name'];
 }

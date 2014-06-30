@@ -57,7 +57,7 @@
       },
       maxZoom: parseInt(gmapSettings.maxzoom),
       location: location ? location : gmapSettings.latlong.split(','),
-      types: settings.types
+      /*types: settings.types*/
     };
 
     if (Object.size(settings.available_countries) == 1) {
@@ -224,7 +224,7 @@
        * updated our latitude, longitude and zoom values.
        */
       widget.find('input[type="text"],select').each(function() {
-        if ($(this).val().length > 0) {
+        if ((this).val().length > 0) {
           if ($(this).is('input')) {
             address.push($(this).val());
           }
@@ -428,6 +428,18 @@
       }
     }
   };
+
+  /**
+   * Resize map if inside a conditional field.
+   */
+  $(document).bind('state:visible-fade state:visible-slide state:visible', function(e) {
+    if (e.trigger) {
+      var o = $(e.target).find('.addressfield-autocomplete-input');
+      if (o.length && o.data('settings') !== undefined && o.data('settings').map) {
+        addressfieldAutocompleteResetMap(o);
+      }
+    }
+  });
 
   /**
    * Get length of object.
