@@ -265,7 +265,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         'thoroughfare' => 'street_number route',
       ),
       'locality_block' => array(
-        'locality' => 'locality postal_town',
+        'locality' => 'locality postal_town administrative_area_level_3',
         'dependent_locality' => 'sub_locality',
         'administrative_area' => 'administrative_area_level_1_short administrative_area_level_2',
         'postal_code' => 'postal_code_prefix postal_code',
