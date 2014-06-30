@@ -72,7 +72,7 @@ function addressfield_autocomplete_field_widget_info() {
         'draggable' => TRUE,
         'geolocation' => TRUE,
         'reverse_geocode' => TRUE,
-        'types' => array('geocode'),
+        'types' => 'geocode',
         'restrict_country' => array(),
       ),
     ),
@@ -205,6 +205,10 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $zoom = isset($data['zoom']) && $data['zoom'] ? $data['zoom'] : 0;
     $formatted_address = isset($data['formatted_address']) ? $data['formatted_address'] : t('Manual');
 
+    if (!isset($instance['default_value'][0])) {
+      $instance['default_value'][0] = array();
+    }
+
     /*
      * This has been added so that we can remove the default completely
      * in the form ui admin settings.
@@ -234,6 +238,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
 
     $instance['widget']['type'] = 'addressfield_standard';
     $address_field = addressfield_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+
     $address_field += array(
       'latitude' => array(
         '#type' => 'hidden',
@@ -432,14 +437,15 @@ function theme_addressfield_autocomplete_map($variables) {
 function _addressfield_autocomplete_widget_transform($element, &$form_state, $form) {
   $parents = $element['#parents'];
   $values = drupal_array_get_nested_value($form_state['values'], $parents);
-
+  $form_ui = $form_state['build_info']['form_id'] == 'field_ui_field_edit_form';
   $data = $address = array();
-  if (!empty($values['autocomplete'])) {
+
+  if (!empty($values['autocomplete']) || $form_ui) {
     $data['latitude'] = $values['widget']['latitude'];
     $data['longitude'] = $values['widget']['longitude'];
     $data['zoom'] = $values['widget']['zoom'];
     $data['formatted_address'] = $values['autocomplete'];
-    foreach (array('element_key', 'latitude', 'longitude') as $key) {
+    foreach (array('latitude', 'longitude', 'zoom') as $key) {
       unset($values['widget'][$key]);
     }
     $address = $values['widget'];
@@ -448,6 +454,7 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
   else {
     $address = array();
   }
+
   array_pop($parents);
   drupal_array_set_nested_value($form_state['values'], $parents, $address);
 }
