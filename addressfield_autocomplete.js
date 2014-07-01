@@ -124,7 +124,7 @@
        * In an accordion the map has to be resized upon animation complete,
        * otherwise the map still looks incorrect.
        */
-      o.closest(".ui-accordion").on("accordionactivate", function(event, ui) {
+      o.closest(".ui-accordion").bind("accordionactivate", function(event, ui) {
         addressfieldAutocompleteResetMap(o);
       });
     }
