@@ -117,14 +117,8 @@
       var fieldsets = o.closest('fieldset.collapsible').find('legend a'),
               verticalTabs = o.closest('.vertical-tabs').find('.vertical-tabs-list a'),
               collapsedDiv = o.closest('div.collapsible').find('.field-group-format-toggler a');
-      fieldsets.add(verticalTabs).add(collapsedDiv).bind('click', function() {
-        addressfieldAutocompleteResetMap(o);
-      });
-      /*
-       * In an accordion the map has to be resized upon animation complete,
-       * otherwise the map still looks incorrect.
-       */
-      o.closest(".ui-accordion").bind("accordionactivate", function(event, ui) {
+              accordion = o.closest('.ui-accordion');
+      fieldsets.add(verticalTabs).add(collapsedDiv).add(accordion).bind('click', function() {
         addressfieldAutocompleteResetMap(o);
       });
     }
