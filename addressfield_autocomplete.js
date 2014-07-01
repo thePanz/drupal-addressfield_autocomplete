@@ -224,7 +224,7 @@
        * updated our latitude, longitude and zoom values.
        */
       widget.find('input[type="text"],select').each(function() {
-        if ((this).val().length > 0) {
+        if ($(this).val().length > 0) {
           if ($(this).is('input')) {
             address.push($(this).val());
           }
