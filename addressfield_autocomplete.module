@@ -76,6 +76,18 @@ function addressfield_autocomplete_field_widget_info() {
         'restrict_country' => array(),
       ),
     ),
+    'addressfield_autocomplete_latlng' => array(
+      'label' => t('Fill from Addressfield Autocomplete'),
+      'field types' => array('geofield', 'geolocation_latlng', 'location'),
+      'settings' => array(
+        'addressfield_autocomplete_field' => '',
+        'delta_handling' => 'default',
+      ),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+        'default value' => FIELD_BEHAVIOR_NONE,
+      ),
+    ),
   );
 }
 
@@ -85,74 +97,114 @@ function addressfield_autocomplete_field_widget_info() {
 function addressfield_autocomplete_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $widget['settings'];
-  $types = array(
-    'geocode',
-    'establishment',
-    '(regions)',
-    '(cities)',
-  );
-  $form['available_countries'] = array(
-    '#type' => 'select',
-    '#multiple' => TRUE,
-    '#title' => t('Available countries'),
-    '#description' => t('If no countries are selected, all countries will be available. If one country is selected the google autocomplete search will be restricted to just that one specific country.'),
-    '#options' => _addressfield_country_options_list(),
-    '#default_value' => $settings['available_countries'],
-  );
-  $form['format_handlers'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Format handlers'),
-    '#options' => addressfield_format_plugins_options(),
-    '#default_value' => $settings['format_handlers'],
-  );
-  $form['map'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Show map'),
-    '#description' => t('Uncheck this box to remove the map, if you want draggable markers this must be selected.'),
-    '#default_value' => $settings['map'],
-  );
-  $form['reveal'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Reveal widget'),
-    '#description' => t('Reveal the addressfield widget after the geocomplete has returned an address.'),
-    '#default_value' => $settings['reveal'],
-  );
-  $form['manual_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Manual text'),
-    '#description' => t('The text to display for the link to enter an address manually.'),
-    '#default_value' => $settings['manual_text'],
-    '#states' => array(
-      'visible' => array(
-        ':input[name="instance[widget][settings][reveal]"]' => array('checked' => TRUE),
+
+  if ($widget['type'] == 'addressfield_autocomplete') {
+    $types = array(
+      'geocode',
+      'establishment',
+      '(regions)',
+      '(cities)',
+    );
+    $form['available_countries'] = array(
+      '#type' => 'select',
+      '#multiple' => TRUE,
+      '#title' => t('Available countries'),
+      '#description' => t('If no countries are selected, all countries will be available. If one country is selected the google autocomplete search will be restricted to just that one specific country.'),
+      '#options' => _addressfield_country_options_list(),
+      '#default_value' => $settings['available_countries'],
+    );
+    $form['format_handlers'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Format handlers'),
+      '#options' => addressfield_format_plugins_options(),
+      '#default_value' => $settings['format_handlers'],
+    );
+    $form['map'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show map'),
+      '#description' => t('Uncheck this box to remove the map, if you want draggable markers this must be selected.'),
+      '#default_value' => $settings['map'],
+    );
+    $form['reveal'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Reveal widget'),
+      '#description' => t('Reveal the addressfield widget after the geocomplete has returned an address.'),
+      '#default_value' => $settings['reveal'],
+    );
+    $form['manual_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Manual text'),
+      '#description' => t('The text to display for the link to enter an address manually.'),
+      '#default_value' => $settings['manual_text'],
+      '#states' => array(
+        'visible' => array(
+          ':input[name="instance[widget][settings][reveal]"]' => array('checked' => TRUE),
+        ),
       ),
-    ),
-  );
-  $form['visible_markers'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Visible markers'),
-    '#description' => t('Choose whether or not the markers should be shown.'),
-    '#default_value' => $settings['visible_markers'],
-  );
-  $form['draggable'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Draggable markers'),
-    '#description' => t('Alter the location of the pointer on the map. Will only work if show map and visible markers are checked.'),
-    '#default_value' => $settings['draggable'],
-  );
-  $form['reverse_geocode'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Reverse geocode'),
-    '#description' => t('Enable HTML5 browser location share when user is entering a manual address.'),
-    '#default_value' => $settings['reverse_geocode'],
-  );
-  $form['types'] = array(
-    '#type' => 'select',
-    '#title' => t('Place types'),
-    '#description' => t('The autocomplete service will return results that match any of the specified types, default is geocode.'),
-    '#options' => drupal_map_assoc($types),
-    '#default_value' => $settings['types'],
-  );
+    );
+    $form['visible_markers'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Visible markers'),
+      '#description' => t('Choose whether or not the markers should be shown.'),
+      '#default_value' => $settings['visible_markers'],
+    );
+    $form['draggable'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Draggable markers'),
+      '#description' => t('Alter the location of the pointer on the map. Will only work if show map and visible markers are checked.'),
+      '#default_value' => $settings['draggable'],
+    );
+    $form['reverse_geocode'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Reverse geocode'),
+      '#description' => t('Enable HTML5 browser location share when user is entering a manual address.'),
+      '#default_value' => $settings['reverse_geocode'],
+    );
+    $form['types'] = array(
+      '#type' => 'select',
+      '#title' => t('Place types'),
+      '#description' => t('The autocomplete service will return results that match any of the specified types, default is geocode.'),
+      '#options' => drupal_map_assoc($types),
+      '#default_value' => $settings['types'],
+    );
+  }
+  else {
+    $settings = $instance['widget']['settings'];
+    $fields = field_info_instances($instance['entity_type'], $instance['bundle']);
+    $options = array();
+
+    foreach ($fields as $field) {
+      if ($field['widget']['type'] == 'addressfield_autocomplete') {
+        $options[$field['field_name']] = $field['label'];
+      }
+    }
+
+    $form['addressfield_autocomplete_field'] = array(
+      '#type' => 'select',
+      '#title' => t('Fill from addressfield autocomplete'),
+      '#default_value' => $settings['addressfield_autocomplete_field'],
+      '#options' => $options,
+      '#description' => t('Select which address autocomplete field to pick from.'),
+      '#required' => TRUE,
+    );
+
+    $items = array(
+      'Matched with each input (e.g. One POINT for each address field)',
+      'Aggregated into a single MULTIPOINT geofield (e.g. One MULTIPOINT polygon from multiple address fields)',
+    );
+
+    $form['delta_handling'] = array(
+      '#type' => 'select',
+      '#title' => t('Multi-value input handling'),
+      '#description' => t('Should geometries from multiple inputs be: !list', array('!list' => theme('item_list', array('items' => $items)))),
+      '#default_value' => $settings['delta_handling'],
+      '#options' => array(
+        'default' => 'Match Multiples (default)',
+        'm_to_s' => 'Multiple to Single',
+      ),
+      '#required' => TRUE,
+    );
+  }
   return $form;
 }
 
@@ -420,6 +472,25 @@ function theme_addressfield_autocomplete_map($variables) {
 }
 
 /**
+ * Implements hook_field_attach_presave().
+ *
+ * Attaching the latitude and longitude values for geofield is done here.
+ */
+function addressfield_autocomplete_field_attach_presave($entity_type, $entity) {
+  // Loop over any geofield using our geocode widget
+  $entity_info = entity_get_info($entity_type);
+  $bundle_name = empty($entity_info['entity keys']['bundle']) ? $entity_type : $entity->{$entity_info['entity keys']['bundle']};
+  foreach (field_info_instances($entity_type, $bundle_name) as $instance) {
+    if ($instance['widget']['type'] === 'addressfield_autocomplete_latlng') {
+      $values = _addressfield_autocomplete_widget_get_field_value($entity_type, $entity, $instance);
+      if ($values) {
+        $entity->{$instance['field_name']} = $values;
+      }
+    }
+  }
+}
+
+/**
  * Addressfield autocomplete transform.
  *
  * Transforms data into the structure accepted by addressfield.
@@ -485,4 +556,96 @@ function _addressfield_autocomplete_get_name($element) {
   array_unshift($element['#field_parents'], $name);
 
   return $element['#name'];
+}
+
+/**
+ * Function to get the geofield information from the autocomplete.
+ */
+function _addressfield_autocomplete_widget_get_field_value($entity_type, $entity, $instance) {
+  if (isset($instance['widget']['settings']['addressfield_autocomplete_field'])) {
+    $values = $field_values = $geometries = array();
+    $field_name = $instance['widget']['settings']['addressfield_autocomplete_field'];
+    $field_instance = field_info_instance($entity_type, $field_name, $entity->type);
+
+    if ($field_instance['widget']['type'] == 'addressfield_autocomplete') {
+      $delta_hanlding = $instance['widget']['settings']['delta_handling'];
+      $target_info = field_info_field($instance['field_name']);
+      $target_type = $target_info['type'];
+      $field_values = field_get_items($entity_type, $entity, $field_name, isset($entity->language) ? $entity->language : NULL);
+
+      if ($field_values) {
+        geophp_load();
+
+        foreach ($field_values as $delta => $item) {
+          $data = unserialize($item['data']);
+          $geometry = array();
+          if (isset($data['latitude']) && isset($data['longitude'])) {
+            $geometry = new Point($data['longitude'], $data['latitude']);
+          }
+          $geometries[$delta] = $geometry;
+        }
+      }
+
+      if ($geometries) {
+        $values = _addressfield_autocomplete_widget_resolve_deltas($geometries, $target_type, $delta_hanlding);
+      }
+    }
+
+    return $values;
+  }
+}
+
+/**
+ * Address autocomplete resolve deltas for handling geofield.
+ *
+ * Given a list of geometries, and user configuration on how to handle deltas,
+ * we created a list of items to be inserted into the fields.
+ */
+function _addressfield_autocomplete_widget_resolve_deltas($geometries, $field_type, $delta_handling = 'default') {
+  $values = array();
+  // Default delta handling: just pass one delta to the next
+  if ($delta_handling == 'default') {
+    foreach ($geometries as $geometry) {
+      $values[] = _addressfield_autocomplete_widget_values_from_geometry($geometry, $field_type);
+    }
+  }
+  // For multiple-to-single handling, run it though geometryReduce
+  if ($delta_handling == 'm_to_s') {
+    $reduced_geom = geoPHP::geometryReduce($geometries);
+    $values[] = _addressfield_autocomplete_widget_values_from_geometry($reduced_geom, $field_type);
+  }
+  // Set the values - geofields do not support languages
+  return array(LANGUAGE_NONE => $values);
+}
+
+/**
+ * Address autocomplete get field values from geometry.
+ *
+ * Given a geometry and the field type, return back a values array for that
+ * field.
+ */
+function _addressfield_autocomplete_widget_values_from_geometry($geometry, $field_type) {
+  if ($field_type == 'geofield')
+    return geofield_get_values_from_geometry($geometry);
+  if ($field_type == 'geolocation_latlng') {
+    $centroid = $geometry->centroid();
+    $lat = $centroid->y();
+    $lng = $centroid->x();
+
+    return array(
+      'lat' => $lat,
+      'lng' => $lng,
+      'lat_sin' => sin(deg2rad($lat)),
+      'lat_cos' => cos(deg2rad($lat)),
+      'lng_rad' => deg2rad($lng),
+    );
+  }
+  if ($field_type == 'location') {
+    $centroid = $geometry->centroid();
+    return array(
+      'latitude' => $centroid->y(),
+      'longitude' => $centroid->x(),
+      'source' => 2,
+    );
+  }
 }
