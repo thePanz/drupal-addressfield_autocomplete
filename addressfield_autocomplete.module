@@ -205,6 +205,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $zoom = isset($data['zoom']) && $data['zoom'] ? $data['zoom'] : 0;
     $formatted_address = isset($data['formatted_address']) ? $data['formatted_address'] : t('Manual');
 
+
     if (!isset($instance['default_value'][0])) {
       $instance['default_value'][0] = array();
     }
@@ -300,18 +301,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         }
       }
     }
-    if ($delta > 0) {
-      /*
-       * On subsequent elements of a field, we make the country field non
-       * required and add a ' - None - ' option to it, so as to allow the
-       * user to remove the address by clearing the country field.
-       */
-      $address_field['country']['#required'] = TRUE;
-      $address_field['country']['#empty_value'] = '';
-      if ($lat == 0 && $lng == 0) {
-        $address_field['#address']['country'] = '';
-      }
-    }
+
     // Map markup.
     $map_variables = array(
       'attributes' => array(
@@ -437,10 +427,9 @@ function theme_addressfield_autocomplete_map($variables) {
 function _addressfield_autocomplete_widget_transform($element, &$form_state, $form) {
   $parents = $element['#parents'];
   $values = drupal_array_get_nested_value($form_state['values'], $parents);
-  $form_ui = $form_state['build_info']['form_id'] == 'field_ui_field_edit_form';
   $data = $address = array();
 
-  if (!empty($values['autocomplete']) || $form_ui) {
+  if (!empty($values['autocomplete'])) {
     $data['latitude'] = $values['widget']['latitude'];
     $data['longitude'] = $values['widget']['longitude'];
     $data['zoom'] = $values['widget']['zoom'];
@@ -470,9 +459,11 @@ function _addressfield_autocomplete_widget_validate($element, &$form_state, $for
   array_pop($parents);
   $values = drupal_array_get_nested_value($form_state['values'], $parents);
 
-  $data = unserialize($values['data']);
-  if (empty($data['latitude']) && empty($data['latitude'])) {
-    form_error($element, t('This address is invalid please try again.'));
+  if (isset($values['data'])) {
+    $data = unserialize($values['data']);
+    if (empty($data['latitude']) && empty($data['latitude'])) {
+      form_error($element, t('This address is invalid please try again.'));
+    }
   }
 }
 
