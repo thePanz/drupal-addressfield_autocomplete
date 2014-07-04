@@ -1,4 +1,4 @@
-<?php
+ad<?php
 
 /**
  * @file
@@ -384,7 +384,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         ),
         'autocomplete' => array(
           '#type' => 'textfield',
-          '#title' => t('Address'),
+          '#title' => $instance['label'],
           '#required' => $delta == 0 && !$form_ui ? $instance['required'] : FALSE,
           '#default_value' => $default_value ? $formatted_address : '',
           '#maxlength' => 200,
