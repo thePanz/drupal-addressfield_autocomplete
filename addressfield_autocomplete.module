@@ -182,6 +182,7 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
     $form['addressfield_autocomplete_field'] = array(
       '#type' => 'select',
       '#title' => t('Fill from addressfield autocomplete'),
+      '#empty_option' => t('- Select -'),
       '#default_value' => $settings['addressfield_autocomplete_field'],
       '#options' => $options,
       '#description' => t('Select which address autocomplete field to pick from.'),
@@ -206,6 +207,17 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
     );
   }
   return $form;
+}
+
+/**
+ * Implements hook_form_FORMID_alter().
+ */
+function addressfield_autocomplete_form_field_ui_widget_type_form_alter(&$form, $form_state, $form_id) {
+  $instance = $form_state['build_info']['args'][0];
+  $field = field_info_field($instance['field_name']);
+  if (in_array($field['type'], array('addressfield', 'geofield', 'geolocation_latlng', 'location'))) {
+    $form['#submit'][] = '_addressfield_autocomplete_field_ui_widget_type_form_submit';
+  }
 }
 
 /**
@@ -256,11 +268,6 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
     $zoom = isset($data['zoom']) && $data['zoom'] ? $data['zoom'] : 0;
     $formatted_address = isset($data['formatted_address']) ? $data['formatted_address'] : t('Manual');
-
-
-    if (!isset($instance['default_value'][0])) {
-      $instance['default_value'][0] = array();
-    }
 
     /*
      * This has been added so that we can remove the default completely
@@ -563,6 +570,7 @@ function _addressfield_autocomplete_get_name($element) {
  */
 function _addressfield_autocomplete_widget_get_field_value($entity_type, $entity, $instance) {
   if (isset($instance['widget']['settings']['addressfield_autocomplete_field'])) {
+
     $values = $field_values = $geometries = array();
     $field_name = $instance['widget']['settings']['addressfield_autocomplete_field'];
     $field_instance = field_info_instance($entity_type, $field_name, $entity->type);
@@ -647,5 +655,30 @@ function _addressfield_autocomplete_widget_values_from_geometry($geometry, $fiel
       'longitude' => $centroid->x(),
       'source' => 2,
     );
+  }
+}
+
+/**
+ * Submit function for after widget is saved.
+ *
+ * Tried to use hook_field_update_instance to fix bugs when update the instance
+ * widget. This did not work so it was changed to an extra submission function.
+ */
+function _addressfield_autocomplete_field_ui_widget_type_form_submit($form, &$form_state) {
+  $bundle = $form['#bundle'];
+  $entity_type = $form['#entity_type'];
+  $field_name = $form['#field_name'];
+
+  // Retrieve the stored instance settings to merge with the incoming values.
+  $instance = field_read_instance($entity_type, $field_name, $bundle);
+  $widget = $instance['widget'];
+  if (!isset($instance['default_value'][0]) && in_array($widget['type'], array('addressfield_autocomplete', 'addressfield_standard'))) {
+    $instance['default_value'][0] = array();
+    field_update_instance($instance);
+  }
+
+  if ($widget['type'] == 'addressfield_autocomplete_latlng') {
+    $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);
+    $form_state['redirect'] = $admin_path . '/fields/' . $field_name;
   }
 }
