@@ -149,9 +149,10 @@
       });
       /*
        * If the lat lng is zero let's try a reverse geocode to see if we
-       * can put a point on the map.
+       * can put a point on the map but only do this if the first input
+       * has a value.
        */
-      if (lat == 0 && lng == 0) {
+      if (lat == 0 && lng == 0 && widget.find('input[type="text"]:first').val() != '') {
         addressfieldAutocompleteManualAddressGeocode(widget.find('input[type="text"]:first'));
       }
     }
