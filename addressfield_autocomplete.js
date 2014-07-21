@@ -25,9 +25,6 @@
       var map = o.closest('.form-item').siblings('.autocomplete-map');
       settings.map_id = map.attr('id');
     }
-    if (lat != 0 && lng != 0) {
-      location = [lat, lng];
-    }
 
     /*
      * Set data inside the object so it can be used in other functions.
@@ -39,6 +36,11 @@
       'link': link,
       'map': map
     });
+
+    if (lat != 0 && lng != 0) {
+      location = [lat, lng];
+    }
+
     /*
      * Set the default options for google maps, places and geocomplete.
      */
@@ -101,7 +103,7 @@
        * As moving the marker and changing the address can be an annoying 
        * ux if you are not expecting it.
        */
- 
+
       if (!!settings.reverse_geocode) {
         o.geocomplete('geocoder').geocode({'latLng': latlng}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
@@ -113,7 +115,7 @@
               o.data('result', results[1]);
               o.addClass('complete');
               addressfieldAutocompleteToggleWidget(o);
-              addressfieldAutocompleteUpdateAddress(o);              
+              addressfieldAutocompleteUpdateAddress(o);
             }
           }
         });
@@ -145,6 +147,13 @@
       fieldsets.add(verticalTabs).add(collapsedDiv).add(accordion).bind('click', function() {
         addressfieldAutocompleteResetMap(o);
       });
+      /*
+       * If the lat lng is zero let's try a reverse geocode to see if we
+       * can put a point on the map.
+       */
+      if (lat == 0 && lng == 0) {
+        addressfieldAutocompleteManualAddressGeocode(widget.find('input[type="text"]:first'));
+      }
     }
     /*
      * If the widget contains the class error we want to reveal the widget so

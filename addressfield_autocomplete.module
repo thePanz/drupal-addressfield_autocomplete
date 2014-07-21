@@ -279,7 +279,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $fields[$field['field_name']] = $settings;
     $path = drupal_get_path('module', 'addressfield_autocomplete');
     $name = _addressfield_autocomplete_get_name($element);
-    $default_value = !empty($items[$delta]['data']) ? $items[$delta] : array();
+    $default_value = !empty($items[$delta]) ? $items[$delta] : array();
     $data = isset($default_value['data']) ? unserialize($default_value['data']) : array();
     $lat = isset($data['latitude']) && $data['latitude'] ? $data['latitude'] : 0;
     $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
@@ -290,7 +290,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
      * This has been added so that we can remove the default completely
      * in the form ui admin settings.
      */
-    if ($lat == 0 && $lng == 0) {
+    if ($form_ui && $lat == 0 && $lng == 0) {
       $default_value = array();
     }
 
