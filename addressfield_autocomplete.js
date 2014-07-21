@@ -91,9 +91,33 @@
       addressfieldAutocompleteUpdateAddress($(this));
 
     }).bind("geocode:dragged", function(event, result) {
-      var widget = $(this).data('widget');
+      var widget = $(this).data('widget'),
+              latlng = new google.maps.LatLng(result.lat(), result.lng());
       widget.find('.latitude').val(result.lat());
       widget.find('.longitude').val(result.lng());
+
+      /*
+       * Reverse geocode setting must be enabled to activate this.
+       * As moving the marker and changing the address can be an annoying 
+       * ux if you are not expecting it.
+       */
+ 
+      if (!!settings.reverse_geocode) {
+        o.geocomplete('geocoder').geocode({'latLng': latlng}, function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            if (results[1]) {
+              var map = o.geocomplete('map'),
+                      zoom = map.getZoom();
+              map.setZoom(zoom > options.maxZoom ? zoom : options.maxZoom);
+              map.setCenter(latlng);
+              o.data('result', results[1]);
+              o.addClass('complete');
+              addressfieldAutocompleteToggleWidget(o);
+              addressfieldAutocompleteUpdateAddress(o);              
+            }
+          }
+        });
+      }
     });
 
     /*
@@ -116,7 +140,7 @@
     if (!!settings.map) {
       var fieldsets = o.closest('fieldset.collapsible').find('legend a'),
               verticalTabs = o.closest('.vertical-tabs').find('.vertical-tabs-list a'),
-              collapsedDiv = o.closest('div.collapsible').find('.field-group-format-toggler a');
+              collapsedDiv = o.closest('div.collapsible').find('.field-group-format-toggler a'),
               accordion = o.closest('.ui-accordion');
       fieldsets.add(verticalTabs).add(collapsedDiv).add(accordion).bind('click', function() {
         addressfieldAutocompleteResetMap(o);
@@ -251,6 +275,13 @@
       data['lng'] = result.geometry.location.lng();
     }
     /*
+     * If reverse geocode is switched on then we always want to update the
+     * autocomplete formatted address.
+     */
+    if (!!settings.reverse_geocode) {
+      o.val(result.formatted_address);
+    }
+    /*
      * Only update if not manually adding an address or reverse geocoding
      */
     if (!o.hasClass('manual-add') || o.hasClass('reverse-geocode')) {
@@ -369,7 +400,7 @@
            * functionality to then provide geocomplete with latitude and
            * longitude values which it can then process into an address.
            */
-          if (!!o.data('settings').reverse_geocode && navigator.geolocation) {
+          if (!!o.data('settings').html5_geocode && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
               var lat = position.coords.latitude;
               var lng = position.coords.longitude;

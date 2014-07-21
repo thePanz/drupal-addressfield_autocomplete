@@ -71,7 +71,8 @@ function addressfield_autocomplete_field_widget_info() {
         'visible_markers' => TRUE,
         'draggable' => TRUE,
         'geolocation' => TRUE,
-        'reverse_geocode' => TRUE,
+        'reverse_geocode' => FALSE,
+        'html5_geocode' => TRUE,
         'types' => 'geocode',
         'restrict_country' => array(),
       ),
@@ -112,30 +113,35 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#description' => t('If no countries are selected, all countries will be available. If one country is selected the google autocomplete search will be restricted to just that one specific country.'),
       '#options' => _addressfield_country_options_list(),
       '#default_value' => $settings['available_countries'],
+      '#weight' => 1,
     );
     $form['format_handlers'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Format handlers'),
       '#options' => addressfield_format_plugins_options(),
       '#default_value' => $settings['format_handlers'],
+      '#weight' => 1,
     );
     $form['map'] = array(
       '#type' => 'checkbox',
       '#title' => t('Show map'),
       '#description' => t('Uncheck this box to remove the map, if you want draggable markers this must be selected.'),
       '#default_value' => $settings['map'],
+      '#weight' => 1,
     );
     $form['reveal'] = array(
       '#type' => 'checkbox',
       '#title' => t('Reveal widget'),
       '#description' => t('Reveal the addressfield widget after the geocomplete has returned an address.'),
       '#default_value' => $settings['reveal'],
+      '#weight' => 2,
     );
     $form['manual_text'] = array(
       '#type' => 'textfield',
       '#title' => t('Manual text'),
       '#description' => t('The text to display for the link to enter an address manually.'),
       '#default_value' => $settings['manual_text'],
+      '#weight' => 3,
       '#states' => array(
         'visible' => array(
           ':input[name="instance[widget][settings][reveal]"]' => array('checked' => TRUE),
@@ -147,18 +153,28 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#title' => t('Visible markers'),
       '#description' => t('Choose whether or not the markers should be shown.'),
       '#default_value' => $settings['visible_markers'],
+      '#weight' => 4,
     );
     $form['draggable'] = array(
       '#type' => 'checkbox',
       '#title' => t('Draggable markers'),
       '#description' => t('Alter the location of the pointer on the map. Will only work if show map and visible markers are checked.'),
       '#default_value' => $settings['draggable'],
+      '#weight' => 4,
     );
     $form['reverse_geocode'] = array(
       '#type' => 'checkbox',
       '#title' => t('Reverse geocode'),
-      '#description' => t('Enable HTML5 browser location share when user is entering a manual address.'),
+      '#description' => t('Enable this to update the address when the marker is moved.'),
       '#default_value' => $settings['reverse_geocode'],
+      '#weight' => 4,
+    );
+    $form['html5_geocode'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('HTML5 geocode'),
+      '#description' => t('Enable HTML5 browser location share when user is entering a manual address.'),
+      '#default_value' => $settings['html5_geocode'],
+      '#weight' => 4,
     );
     $form['types'] = array(
       '#type' => 'select',
@@ -166,6 +182,7 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#description' => t('The autocomplete service will return results that match any of the specified types, default is geocode.'),
       '#options' => drupal_map_assoc($types),
       '#default_value' => $settings['types'],
+      '#weight' => 4,
     );
   }
   else {
@@ -332,7 +349,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       'locality_block' => array(
         'locality' => 'administrative_area_level_3 postal_town locality',
         'dependent_locality' => 'sub_locality',
-        'administrative_area' => 'administrative_area_level_1_short administrative_area_level_2',
+        'administrative_area' => 'administrative_area_level_1_short administrative_area_level_2 administrative_area_level_1',
         'postal_code' => 'postal_code_prefix postal_code',
       ),
     );
@@ -391,7 +408,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         ),
         'autocomplete' => array(
           '#type' => 'textfield',
-          '#title' => $instance['label'],
+          '#title' => check_plain($instance['label']),
           '#required' => $delta == 0 && !$form_ui ? $instance['required'] : FALSE,
           '#default_value' => $default_value ? $formatted_address : '',
           '#maxlength' => 200,
