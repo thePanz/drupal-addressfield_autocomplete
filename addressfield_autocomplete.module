@@ -349,7 +349,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       'locality_block' => array(
         'locality' => 'administrative_area_level_3 postal_town locality',
         'dependent_locality' => 'sub_locality',
-        'administrative_area' => 'administrative_area_level_1_short administrative_area_level_2 administrative_area_level_1',
+        'administrative_area' => 'administrative_area_level_2_short administrative_area_level_1_short administrative_area_level_2 administrative_area_level_1',
         'postal_code' => 'postal_code_prefix postal_code',
       ),
     );
