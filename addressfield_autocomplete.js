@@ -103,17 +103,14 @@
        * As moving the marker and changing the address can be an annoying 
        * ux if you are not expecting it.
        */
-
       if (!!settings.reverse_geocode) {
         o.geocomplete('geocoder').geocode({'latLng': latlng}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
             if (results[1]) {
-              var map = o.geocomplete('map'),
-                      zoom = map.getZoom();
-              map.setZoom(zoom > options.maxZoom ? zoom : options.maxZoom);
+              var map = o.geocomplete('map');
               map.setCenter(latlng);
               o.data('result', results[1]);
-              o.addClass('complete');
+              o.addClass('complete reverse-geocode');
               addressfieldAutocompleteToggleWidget(o);
               addressfieldAutocompleteUpdateAddress(o);
             }
