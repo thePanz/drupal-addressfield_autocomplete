@@ -278,8 +278,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $settings['types'] = array($settings['types']);
     $fields[$field['field_name']] = $settings;
     $path = drupal_get_path('module', 'addressfield_autocomplete');
-    $name = _addressfield_autocomplete_get_name($element);
-    $default_value = !empty($items[$delta]) ? $items[$delta] : array();
+    $default_value = !empty($items[$delta]['data']) ? $items[$delta] : array();
     $data = isset($default_value['data']) ? unserialize($default_value['data']) : array();
     $lat = isset($data['latitude']) && $data['latitude'] ? $data['latitude'] : 0;
     $lng = isset($data['longitude']) && $data['longitude'] ? $data['longitude'] : 0;
@@ -349,7 +348,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       'locality_block' => array(
         'locality' => 'administrative_area_level_3 postal_town locality',
         'dependent_locality' => 'sub_locality',
-        'administrative_area' => 'administrative_area_level_2_short administrative_area_level_1_short administrative_area_level_2 administrative_area_level_1',
+        'administrative_area' => 'administrative_area_level_1_short administrative_area_level_2',
         'postal_code' => 'postal_code_prefix postal_code',
       ),
     );
@@ -395,6 +394,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $element += array(
       $element['#field_name'] => array(
         '#type' => 'container',
+        '#after_build' => array('_addressfield_autocomplete_widget_after_build'),  
         '#element_validate' => array(
           '_addressfield_autocomplete_widget_transform',
         ),
@@ -418,22 +418,12 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
             'class' => array('addressfield-autocomplete-input'),
             'autocomplete' => 'off',
           ),
-          '#states' => array(
-            'visible' => array(
-              ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
-            ),
-          ),
         ),
         'link_container' => array(
           '#type' => 'container',
           '#access' => $settings['reveal'],
           '#attributes' => array(
             'class' => array('addressfield-autocomplete-link'),
-          ),
-          '#states' => array(
-            'visible' => array(
-              ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
-            ),
           ),
           'link' => array(
             '#markup' => l(t('@manual_text', array('@manual_text' => $settings['manual_text'])), 'javascript:void(0);', $link_variables),
@@ -442,11 +432,6 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         'widget' => array(
           '#type' => 'container',
           '#weight' => 10,
-          '#states' => array(
-            'visible' => array(
-              ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
-            ),
-          ),
         ),
         'map' => array(
           '#access' => $settings['map'],
@@ -563,23 +548,30 @@ function _addressfield_autocomplete_widget_validate($element, &$form_state, $for
 }
 
 /**
- * Get the name of the element based upon the field, lanaguage and delta.
+ * Adds the states to the correct form element by name.
+ *
+ * @param $form_element
+ *   The form element containing the parents array.
  */
-function _addressfield_autocomplete_get_name($element) {
-  $field = array(
-    $element['#field_name'],
-    $element['#language'],
-    $element['#delta'],
+function _addressfield_autocomplete_widget_after_build($form_element) {
+  $parents = $form_element['#parents'];
+  $name = array_shift($parents) . '[' . implode('][', $parents) . ']';
+  $form_element['autocomplete']['#states'] = array(
+    'visible' => array(
+      ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
+    ),
   );
-  $element['#field_parents'] = array_merge($element['#field_parents'], $field);
-  $name = array_shift($element['#field_parents']);
-  $element['#name'] = $name;
-  if (count($element['#field_parents'])) {
-    $element['#name'] .= '[' . implode('][', array_merge($element['#field_parents'], array($element['#field_name']))) . ']';
-  }
-  array_unshift($element['#field_parents'], $name);
-
-  return $element['#name'];
+  $form_element['link_container']['#states'] = array(
+    'visible' => array(
+      ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
+    ),
+  );
+  $form_element['widget']['#states'] = array(
+    'visible' => array(
+      ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
+    ),
+  );
+  return $form_element;
 }
 
 /**
