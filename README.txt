@@ -27,6 +27,11 @@ Installation
    autocomplete.
 6. Adjust the instance settings of the field to suit your needs.
 
+Addressfield Autocomplete, Geofield and Geocoder work together
+------------------------------------------------------------------------------
+For more information on integrating these 3 modules please visit:
+https://www.drupal.org/node/2359579
+
 Notes
 ------------------------------------------------------------------------------
 Some of the maps settings are inherited from the GMap module settings page.
