@@ -342,6 +342,9 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     );
     // Add data-geo data to the address fields.
     $data_geo = array(
+      'organisation_block' => array(
+        'organisation_name' => 'organisation_name',
+      ),
       'street_block' => array(
         'thoroughfare' => 'street_number route',
       ),

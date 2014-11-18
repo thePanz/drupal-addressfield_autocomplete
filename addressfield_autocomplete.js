@@ -281,6 +281,9 @@
       data['lat'] = result.geometry.location.lat();
       data['lng'] = result.geometry.location.lng();
     }
+    if (result.name !== undefined) {
+      data['organisation_name'] = result.name;
+    }
     /*
      * If reverse geocode is switched on then we always want to update the
      * autocomplete formatted address.
