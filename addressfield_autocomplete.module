@@ -275,7 +275,8 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     $form_ui = $form_state['build_info']['form_id'] == 'field_ui_field_edit_form';
     $fields = &drupal_static(__FUNCTION__, array());
     $settings = $instance['widget']['settings'];
-    $settings['types'] = array($settings['types']);
+
+    // This field name is updated after build with the complete field name.
     $fields[$field['field_name']] = $settings;
     $path = drupal_get_path('module', 'addressfield_autocomplete');
     $default_value = !empty($items[$delta]['data']) ? $items[$delta] : array();
@@ -308,9 +309,10 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       ),
       'type' => 'setting',
     );
-    $form['#attached']['js'] = $js;
-    $form['#attached']['libraries_load'][] = array('geocomplete');
-    $form['#attached']['css'] = array($path . '/addressfield_autocomplete.css');
+
+    $attachments['js'] = $js;
+    $attachments['libraries_load'][] = array('geocomplete');
+    $attachments['css'] = array($path . '/addressfield_autocomplete.css');
 
     $instance['widget']['type'] = 'addressfield_standard';
     $address_field = addressfield_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
@@ -395,12 +397,14 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     );
 
     $element += array(
+      '#type' => 'container',
       $element['#field_name'] => array(
         '#type' => 'container',
-        '#after_build' => array('_addressfield_autocomplete_widget_after_build'),  
+        '#after_build' => array('_addressfield_autocomplete_widget_after_build'),
         '#element_validate' => array(
           '_addressfield_autocomplete_widget_transform',
         ),
+        '#attached' => $attachments,
         'reveal' => array(
           '#type' => 'hidden',
           '#default_value' => $default_value && $settings['reveal'] ? 1 : 0,
@@ -551,7 +555,7 @@ function _addressfield_autocomplete_widget_validate($element, &$form_state, $for
 }
 
 /**
- * Adds the states to the correct form element by name.
+ * Adds the states and JS settings to the correct form element by name.
  *
  * @param $form_element
  *   The form element containing the parents array.
@@ -559,6 +563,15 @@ function _addressfield_autocomplete_widget_validate($element, &$form_state, $for
 function _addressfield_autocomplete_widget_after_build($form_element) {
   $parents = $form_element['#parents'];
   $name = array_shift($parents) . '[' . implode('][', $parents) . ']';
+
+  // Update fields in JS settings with complete field name from parents.
+  $attached_js_fields = &$form_element['#attached']['js'][0]['data']['addressfield_autocomplete']['fields'];
+  $renamed_field_settings = array();
+  foreach($attached_js_fields as $key => $settings) {
+    $renamed_field_settings[$name] = $settings;
+  }
+  $attached_js_fields = $renamed_field_settings;
+
   $form_element['autocomplete']['#states'] = array(
     'visible' => array(
       ':input[name="' . $name . '[reveal]"]' => array('value' => '0'),
@@ -574,6 +587,7 @@ function _addressfield_autocomplete_widget_after_build($form_element) {
       ':input[name="' . $name . '[reveal]"]' => array('value' => '1'),
     ),
   );
+
   return $form_element;
 }
 

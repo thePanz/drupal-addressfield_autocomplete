@@ -59,7 +59,7 @@
       },
       maxZoom: parseInt(gmapSettings.maxzoom),
       location: location ? location : gmapSettings.latlong.split(','),
-      types: settings.types
+      types: [ settings.types ]
     };
 
     if (Object.size(settings.available_countries) == 1) {
