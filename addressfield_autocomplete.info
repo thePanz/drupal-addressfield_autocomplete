@@ -5,3 +5,4 @@ core = 7.x
 dependencies[] = addressfield
 dependencies[] = gmap
 dependencies[] = libraries
+dependencies[] = geophp
