@@ -357,6 +357,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         'postal_code' => 'postal_code_prefix postal_code',
       ),
     );
+    
     /*
      * If reveal widget is not chosen we must remove the required
      * fields otherwise people wont be able to submit an incomplete
@@ -533,6 +534,11 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
 
   array_pop($parents);
   drupal_array_set_nested_value($form_state['values'], $parents, $address);
+  /*
+   * From addressfield 7.x-1.0-rc1 we also need to set the input to the value
+   * of the widget. Otherwise the form does not appear.
+   */
+  drupal_array_set_nested_value($form_state['input'], $parents, $address);
 }
 
 /**
