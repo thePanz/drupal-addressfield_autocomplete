@@ -91,7 +91,6 @@
       $(this).addClass('complete');
       addressfieldAutocompleteToggleWidget($(this));
       addressfieldAutocompleteUpdateAddress($(this));
-
     }).bind("geocode:dragged", function(event, result) {
       var widget = $(this).data('widget'),
               latlng = new google.maps.LatLng(result.lat(), result.lng());
@@ -325,16 +324,24 @@
         var object = $(this);
         var geo = object.data('geo').split(" ");
         for (var i = 0; i < geo.length; i++) {
-          if (data[geo[i]] !== undefined) {
-            if (geo[i] == 'street_number' || geo[i] == 'route') {
-              i >= 1 ? $(this).val($(this).val() + " " + data[geo[i]]) : $(this).val(data[geo[i]]);
-            }
-            else {
-              $(this).val(data[geo[i]]);
-              // If select and value is not empty
-              if ($(this).is('select') && $(this).val().length > 0) {
-                break;
-              }
+          // If no data in result then continue
+          if (data[geo[i]] === undefined) {
+            continue;
+          }
+          // Handle subpremise
+          if (geo[i] === 'subpremise' && geo[(i+1)] === 'street_number') {
+            $(this).val(data[geo[i]] + '/' + data[geo[(i+1)]]);
+            i++;
+          }
+          // Hanlde rest of thoroughfare
+          else if (geo[i] === 'street_number' || geo[i] === 'route') {
+            $(this).val() ? $(this).val($(this).val() + " " + data[geo[i]]) : $(this).val(data[geo[i]]);
+          }
+          else {
+            $(this).val(data[geo[i]]);
+            // If select and value is not empty
+            if ($(this).is('select') && $(this).val().length > 0) {
+              break;
             }
           }
         }

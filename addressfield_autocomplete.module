@@ -348,7 +348,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
         'organisation_name' => 'organisation_name',
       ),
       'street_block' => array(
-        'thoroughfare' => 'street_number route',
+        'thoroughfare' => 'subpremise street_number route',
       ),
       'locality_block' => array(
         'locality' => 'administrative_area_level_3 postal_town locality',
