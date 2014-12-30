@@ -17,7 +17,7 @@ http://ubilabs.github.io/geocomplete/
 
 Installation
 ------------------------------------------------------------------------------
-1. Make sure you have installed addressfield, GMap, geophp and libraries.
+1. Make sure you have installed addressfield, GMap and libraries.
 2. Download the geocomplete plugin from the following location
    http://ubilabs.github.io/geocomplete/
 3. Extract the plugin to your libraries directory and rename the folder
