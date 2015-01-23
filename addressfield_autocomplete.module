@@ -65,6 +65,7 @@ function addressfield_autocomplete_field_widget_info() {
       'field types' => array('addressfield'),
       'settings' => array(
         'available_countries' => array(),
+        'default_country' => '',
         'format_handlers' => array('address'),
         'map' => TRUE,
         'reveal' => TRUE,
@@ -116,6 +117,14 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#default_value' => $settings['available_countries'],
       '#weight' => 1,
     );
+    $form['default_country'] = array(
+      '#type' => 'select',
+      '#title' => t('Default country'),
+      '#options' => _addressfield_country_options_list(),
+      '#default_value' => $settings['default_country'],
+      '#empty_value' => '',
+      '#weight' => 1,
+    );
     $form['format_handlers'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Format handlers'),
@@ -128,7 +137,7 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#title' => t('Show map'),
       '#description' => t('Uncheck this box to remove the map, if you want draggable markers this must be selected.'),
       '#default_value' => $settings['map'],
-      '#weight' => 1,
+      '#weight' => 2,
     );
     $form['reveal'] = array(
       '#type' => 'checkbox',
