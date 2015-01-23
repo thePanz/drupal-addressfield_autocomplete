@@ -1,5 +1,6 @@
 <?php
 
+use Drupal\gmap\GmapDefaults;
 /**
  * @file
  * The Addressfield Autocomplete module code.
@@ -267,7 +268,9 @@ function addressfield_autocomplete_help($path, $arg) {
  */
 function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   if ($instance['widget']['type'] == 'addressfield_autocomplete') {
-    $gmap_defaults = gmap_defaults();
+    module_load_include('php', 'gmap', 'lib/Drupal/gmap/GmapDefaults');
+
+    $gmap_defaults = GmapDefaults::getInstance()->getDefaults();
     switch ($gmap_defaults['maptype']) {
       case 'Map':
         $gmap_defaults['maptype'] = 'roadmap';
@@ -301,7 +304,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       $default_value = array();
     }
 
-    $js = _gmap_base_js();
+    $js = GmapDefaults::getInstance()->getBaseJs();
     $js[$path . '/addressfield_autocomplete.js'] = array(
       'type' => 'file',
       'weight' => 3,
