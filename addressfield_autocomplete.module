@@ -78,6 +78,7 @@ function addressfield_autocomplete_field_widget_info() {
         'html5_geocode' => TRUE,
         'types' => 'geocode',
         'restrict_country' => array(),
+        'street_number_placement' => 'before-street-name',
       ),
     ),
     'addressfield_autocomplete_latlng' => array(
@@ -194,6 +195,22 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#options' => drupal_map_assoc($types),
       '#default_value' => $settings['types'],
       '#weight' => 4,
+    );
+
+    $not_implemented = ' (' . t('Not implemented') . ')';
+    $street_number_placement = array(
+      'before-street-name' => t('Before street name'),
+      'after-street-name' => t('After street name'),
+      'country-dependant' => t('Country dependant') . $not_implemented,
+      'in-thoroughfare-number' => t('In ThoroughfareNumber field') . $not_implemented,
+    );
+    $form['street_number_placement'] = array(
+      '#type' => 'select',
+      '#title' => t('Street number placement'),
+      '#description' => t('Defines where the street-number obtained from the autocomplete process should be placed in the underlying Address field.'),
+      '#options' => $street_number_placement,
+      '#default_value' => $settings['street_number_placement'],
+      '#weight' => 5,
     );
     return $form;
   }
@@ -371,7 +388,7 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       'organisation_name' => 'organisation_name',
     ),
     'street_block' => array(
-      'thoroughfare' => 'subpremise street_number route',
+      'thoroughfare' => '',
     ),
     'locality_block' => array(
       'locality' => 'administrative_area_level_3 postal_town locality',
@@ -380,6 +397,20 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       'postal_code' => 'postal_code_prefix postal_code',
     ),
   );
+
+  // Handling street-number placement.
+  switch ($settings['street_number_placement']) {
+    case 'after-street-name':
+      $data_geo['street_block']['thoroughfare'] = 'subpremise route street_number';
+      break;
+    case 'country-dependant':
+      // @todo: not implemented! Rqequires JS script to handle the right placement
+    case 'in-thoroughfare-number':
+      // @todo: not Implemented! Requires the availability of ThoroughfareNumber in address_field module.
+    case 'before-street-name':
+    default:
+      $data_geo['street_block']['thoroughfare'] = 'subpremise street_number route';
+  }
 
   /*
    * If reveal widget is not chosen we must remove the required
