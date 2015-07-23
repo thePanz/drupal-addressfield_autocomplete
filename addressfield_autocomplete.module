@@ -660,6 +660,13 @@ function _addressfield_autocomplete_widget_transform($element, &$form_state, $fo
   $data = $address = array();
 
   if (!empty($values['autocomplete'])) {
+    // Restore the lat/lon values in case they've been displayed.
+    if (isset($values['widget']['latlon_container'])) {
+      $values['widget']['latitude']  = $values['widget']['latlon_container']['latlon_fields']['latitude'];
+      $values['widget']['longitude'] = $values['widget']['latlon_container']['latlon_fields']['longitude'];
+      unset($values['widget']['latlon_container']);
+    }
+
     $data['latitude'] = $values['widget']['latitude'];
     $data['longitude'] = $values['widget']['longitude'];
     $data['zoom'] = $values['widget']['zoom'];
