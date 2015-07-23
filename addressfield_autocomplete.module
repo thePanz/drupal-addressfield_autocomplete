@@ -78,6 +78,9 @@ function addressfield_autocomplete_field_widget_info() {
         'html5_geocode' => TRUE,
         'types' => 'geocode',
         'restrict_country' => array(),
+        'coordinates_display' => FALSE,
+        'coordinates_editable' => FALSE,
+        'auto_geocode_when_revealed' => TRUE,
       ),
     ),
     'addressfield_autocomplete_latlng' => array(
@@ -100,6 +103,7 @@ function addressfield_autocomplete_field_widget_info() {
  */
 function addressfield_autocomplete_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
+  $not_implemented = ' (' . t('Not implemented') . ')';
 
   if ($widget['type'] == 'addressfield_autocomplete') {
     $settings = $widget['settings'];
@@ -171,21 +175,57 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#title' => t('Draggable markers'),
       '#description' => t('Alter the location of the pointer on the map. Will only work if show map and visible markers are checked.'),
       '#default_value' => $settings['draggable'],
-      '#weight' => 4,
+      '#weight' => 5,
     );
+
+    $form['coordinates_display'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display coordinates'),
+      '#description' => t('Display the coordinates retrieved by Google APIs as Address fields.'),
+      '#default_value' => $settings['coordinates_display'],
+      '#weight' => 6,
+    );
+    $form['coordinates_editable'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Editable coordinates'),
+      '#description' => t('Allow user to edit the coordinates retrieved by Google APIs  as Address fields.'),
+      '#default_value' => $settings['coordinates_editable'],
+      '#weight' => 7,
+      '#states' => array(
+        'visible' => array(
+          ':input[name="' . 'instance[widget][settings][coordinates_display]' . '"]' => array('checked' => TRUE),
+        )
+      ),
+    );
+    $form['auto_geocode_when_revealed'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Auto-Geocode when revealed') . $not_implemented,
+      '#description' => t(
+        'Enables automatic address geo-coding when any Address sub-field is edited in the "revealed" form.'.
+        ' By disabling this option the user can  manually trigger the geo-coding execution. '.
+        ' Disabling this feature is strongly recommended to avoid data overwriting when the coordinates are editable.'),
+      '#default_value' => $settings['auto_geocode_when_revealed'],
+      '#weight' => 8,
+      '#states' => array(
+        'visible' => array(
+          ':input[name="' . 'instance[widget][settings][coordinates_editable]' . '"]' => array('checked' => TRUE),
+        )
+      ),
+    );
+
     $form['reverse_geocode'] = array(
       '#type' => 'checkbox',
       '#title' => t('Reverse geocode'),
       '#description' => t('Enable this to update the address when the marker is moved.'),
       '#default_value' => $settings['reverse_geocode'],
-      '#weight' => 4,
+      '#weight' => 9,
     );
     $form['html5_geocode'] = array(
       '#type' => 'checkbox',
       '#title' => t('HTML5 geocode'),
       '#description' => t('Enable HTML5 browser location share when user is entering a manual address.'),
       '#default_value' => $settings['html5_geocode'],
-      '#weight' => 4,
+      '#weight' => 10,
     );
     $form['types'] = array(
       '#type' => 'select',
@@ -193,7 +233,7 @@ function addressfield_autocomplete_field_widget_settings_form($field, $instance)
       '#description' => t('The autocomplete service will return results that match any of the specified types, default is geocode.'),
       '#options' => drupal_map_assoc($types),
       '#default_value' => $settings['types'],
-      '#weight' => 4,
+      '#weight' => 11,
     );
     return $form;
   }
@@ -333,6 +373,8 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
     'type' => 'setting',
   );
 
+  $links = array();
+
   $attachments['js'] = $js;
   $attachments['libraries_load'][] = array('geocomplete');
   $attachments['css'] = array($path . '/addressfield_autocomplete.css');
@@ -365,6 +407,65 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       ),
     ),
   );
+
+  // If the coordinates are set to be visible, change the field types.
+  if ($settings['coordinates_display'] == TRUE) {
+    $latlon_fields = array(
+      'latitude' => t('Latitude'),
+      'longitude' => t('Longitude'),
+    );
+
+    $address_field['latlon_container'] = array(
+      '#type' => 'container',
+      'latlon_fields' => array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'class' => array('addressfield-container-inline'),
+        ),
+      ),
+      'latlon_controls' => array(
+        '#type' => 'container',
+      ),
+    );
+
+    foreach($latlon_fields as $latlon_field_name => $latlon_label) {
+      $address_field['latlon_container']['latlon_fields'][$latlon_field_name] = array_merge($address_field[$latlon_field_name], array(
+        '#type'  => 'textfield',
+        '#title' => $latlon_label,
+        '#maxlength' => 40,
+        '#size' => 30,
+        '#disabled' => !$settings['coordinates_editable'],
+      ));
+      unset($address_field[$latlon_field_name]);
+    }
+
+    if ($settings['coordinates_editable'] == TRUE) {
+      $links[] = array(
+        'title' => t('Override coordinates'),
+        'href' => 'javascript:void(0);',
+        'external' => TRUE,
+        'attributes' => array(
+          'class' => 'addressfield-autocomplete-centermap'
+        ),
+      );
+
+      if ($settings['auto_geocode_when_revealed'] == FALSE) {
+        $links[] = array(
+          'title' => t('Update coordinates from Address'),
+          'href' => 'javascript:void(0);',
+          'external' => TRUE,
+          'attributes' => array(
+            'class' => 'addressfield-autocomplete-manualgeocode'
+          ),
+        );
+      }
+    }
+
+    $address_field['latlon_container']['controls'] = array(
+      '#markup' => theme('addressfield_autocomplete_controls', array('links' => $links)),
+    );
+  }
+
   // Add data-geo data to the address fields.
   $data_geo = array(
     'organisation_block' => array(
@@ -490,6 +591,11 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
  */
 function addressfield_autocomplete_theme() {
   return array(
+    'addressfield_autocomplete_controls' => array(
+      'variables' => array(
+        'links' => array()
+      ),
+    ),
     'addressfield_autocomplete_map' => array(
       'variables' => array(
         'attributes' => array(
@@ -508,6 +614,19 @@ function theme_addressfield_autocomplete_map($variables) {
   $attributes['class'][] = 'autocomplete-map';
   $attributes['class'][] = 'clearfix';
   return '<div' . drupal_attributes($attributes) . '></div>';
+}
+
+/**
+ * Render a container for a set of autocomplete addressfield controls.
+ * @param $variables
+ * @return string
+ */
+function theme_addressfield_autocomplete_controls($variables) {
+  return theme_links(array(
+    'links' => $variables['links'],
+    'attributes' => array('autocomplete-addressfield-controls'),
+    'heading' => null,
+  ));
 }
 
 /**
