@@ -11,15 +11,15 @@
    */
   var addressfieldAutocompleteInit = function(o, settings) {
     var gmapSettings = Drupal.settings.addressfield_autocomplete.gmap,
-            widget = o.closest('.form-item').siblings('div[id^="addressfield-wrapper"]:first'),
-            reveal = o.closest('.form-item').prev('.addressfield-autocomplete-hidden-reveal'),
-            link = o.closest('.form-item').siblings('.addressfield-autocomplete-link:first').find('a'),
-            lat = widget.find('.latitude').val(),
-            lng = widget.find('.longitude').val(),
-            zoom = parseInt(widget.find('.zoom').val()),
-            location = gmapSettings.latlong.split(','),
-            center = new google.maps.LatLng(location[0], location[1]),
-            options = {};
+        widget = o.closest('.form-item').siblings('div[id^="addressfield-wrapper"]:first'),
+        reveal = o.closest('.form-item').prev('.addressfield-autocomplete-hidden-reveal'),
+        link = o.closest('.form-item').siblings('.addressfield-autocomplete-link:first').find('a'),
+        lat = widget.find('.latitude').val(),
+        lng = widget.find('.longitude').val(),
+        zoom = parseInt(widget.find('.zoom').val()),
+        location = gmapSettings.latlong.split(','),
+        center = new google.maps.LatLng(location[0], location[1]),
+        options = {};
 
     if (settings.map) {
       var map = o.closest('.form-item').siblings('.autocomplete-map');
@@ -93,7 +93,7 @@
       addressfieldAutocompleteUpdateAddress($(this));
     }).bind("geocode:dragged", function(event, result) {
       var widget = $(this).data('widget'),
-              latlng = new google.maps.LatLng(result.lat(), result.lng());
+        latlng = new google.maps.LatLng(result.lat(), result.lng());
       widget.find('.latitude').val(result.lat());
       widget.find('.longitude').val(result.lng());
 
@@ -137,9 +137,9 @@
      */
     if (!!settings.map) {
       var fieldsets = o.closest('fieldset.collapsible').find('legend a'),
-              verticalTabs = o.closest('.vertical-tabs').find('.vertical-tabs-list a'),
-              collapsedDiv = o.closest('div.collapsible').find('.field-group-format-toggler a'),
-              accordion = o.closest('.ui-accordion');
+          verticalTabs = o.closest('.vertical-tabs').find('.vertical-tabs-list a'),
+          collapsedDiv = o.closest('div.collapsible').find('.field-group-format-toggler a'),
+          accordion = o.closest('.ui-accordion');
       fieldsets.add(verticalTabs).add(collapsedDiv).add(accordion).bind('click', function() {
         addressfieldAutocompleteResetMap(o);
       });
@@ -172,12 +172,15 @@
   /**
    * Set map defaults
    */
-  var addressfieldAutocompleteResetMap = function(o) {
+  var addressfieldAutocompleteResetMap = function(o, centeredAt) {
     var map = o.geocomplete('map'),
             marker = o.geocomplete('marker');
 
     if (map) {
-      var center = map.getCenter();
+      var center = centeredAt;
+      if(!center) {
+        center = map.getCenter();
+      }
       google.maps.event.trigger(map, 'resize');
       map.setCenter(center);
       map.setZoom(map.getZoom());
@@ -192,9 +195,9 @@
    */
   var addressfieldAutocompleteToggleWidget = function(o) {
     var reveal = o.data('reveal'),
-            widget = o.data('widget'),
-            settings = o.data('settings'),
-            link = o.data('link');
+      widget = o.data('widget'),
+      settings = o.data('settings'),
+      link = o.data('link');
     /*
      * If the reveal value is set to 0 the widget is not shown.
      */
@@ -226,10 +229,11 @@
     }
     return widget;
   };
-  var addressfieldAutocompleteManualAddressGeocode = function(o, data) {
+
+  var addressfieldAutocompleteManualAddressGeocode = function(o, data, force) {
     var widget = o.closest('div[id^="addressfield-wrapper"]'),
-            input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input'),
-            address = [];
+      input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input'),
+      address = [];
     if (data === undefined) {
       input.removeClass('reverse-geocode').addClass('manual-add');
     }
@@ -247,7 +251,7 @@
        * geocomplete find, this will hopefully return a result and
        * updated our latitude, longitude and zoom values.
        */
-      widget.find('input[type="text"],select').each(function() {
+      widget.find('input[type="text"][data-geo!="lat"][data-geo!="lng"],select').each(function() {
         if ($(this).val().length > 0) {
           if ($(this).is('input')) {
             address.push($(this).val());
@@ -263,10 +267,10 @@
   };
   var addressfieldAutocompleteUpdateAddress = function(o) {
     var data = {},
-            settings = o.data('settings'),
-            widget = o.data('widget'),
-            map = o.data('map'),
-            result = o.data('result');
+      settings = o.data('settings'),
+      widget = o.data('widget'),
+      map = o.data('map'),
+      result = o.data('result');
     /*
      * Load all of the address details obtained by the geocomplete
      * into a data array to be used later.
@@ -305,9 +309,7 @@
       var country = widget.find('select.country:first');
       if (data.country_short !== country.val()) {
         country.val(data.country_short);
-        country.trigger('change', [{
-            update: true
-          }]);
+        country.trigger('change', [{ update: true }]);
       }
       /*
        * If the change has been triggered because the addressfield
@@ -428,6 +430,32 @@
         }
         addressfieldAutocompleteToggleWidget(o);
       });
+
+      /*
+       * Allow users to manually geocode the address typed in the Address
+       * fields. This must be used when the auto-geocode is disabled for this
+       * widget, usually to avoid edited lat/long to be automatically replaced
+       * without the user awareness.
+       */
+      $('.addressfield-autocomplete-manualgeocode').once().bind('mousedown', function(e) {
+        addressfieldAutocompleteManualAddressGeocode($(this), undefined, true);
+      });
+
+      /*
+       * Allow users to center the map on the given coordinates, this is useful
+       * when the user is manually editing the lat/long values and wants to
+       * update the Google marker position on the map.
+       */
+      $('.addressfield-autocomplete-centermap').once().bind('mousedown', function(e) {
+        var widget = $(this).closest('div[id^="addressfield-wrapper"]'),
+            input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input');
+        lat = widget.find('input[type="text"][data-geo="lat"').val();
+        lng = widget.find('input[type="text"][data-geo="lng"').val();
+        center = new google.maps.LatLng(lat,lng);
+
+        addressfieldAutocompleteResetMap(input, center);
+      });
+
       /*
        * If manual entry has been chosen on blur of each field
        * we want to geocode the entire address but not update
@@ -435,7 +463,7 @@
        * As we want this information even if people are entering
        * their addresses manually.
        */
-      $('[id^="addressfield-wrapper"] input[type="text"]').once().blur(function() {
+      $('[id^="addressfield-wrapper"] input[type="text"][data-geo!="lat"][data-geo!="lng"]').once().blur(function() {
         addressfieldAutocompleteManualAddressGeocode($(this));
       });
       $('[id^="addressfield-wrapper"] select').once().change(function(e, data) {
