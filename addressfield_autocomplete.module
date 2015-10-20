@@ -432,6 +432,8 @@ function addressfield_autocomplete_field_widget_form(&$form, &$form_state, $fiel
       'longitude' => t('Longitude'),
     );
 
+    $attachments['css'][] = drupal_get_path('module', 'addressfield') . '/addressfield.css';
+
     $address_field['latlon_container'] = array(
       '#type' => 'container',
       'latlon_fields' => array(
@@ -674,7 +676,9 @@ function addressfield_autocomplete_field_attach_presave($entity_type, $entity) {
       continue;
     }
     $values = _addressfield_autocomplete_widget_get_field_value($entity_type, $entity, $instance);
-    if ($values) {
+
+    // Use the retrieved values to fill the geofield.
+    if (is_array($values)) {
       $entity->{$instance['field_name']} = $values;
     }
   }

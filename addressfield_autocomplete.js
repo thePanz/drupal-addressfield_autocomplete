@@ -93,7 +93,7 @@
       addressfieldAutocompleteUpdateAddress($(this));
     }).bind("geocode:dragged", function(event, result) {
       var widget = $(this).data('widget'),
-        latlng = new google.maps.LatLng(result.lat(), result.lng());
+          latlng = new google.maps.LatLng(result.lat(), result.lng());
       widget.find('.latitude').val(result.lat());
       widget.find('.longitude').val(result.lng());
 
@@ -148,9 +148,9 @@
        * can put a point on the map but only do this if the first input
        * has a value.
        */
-      if (lat == 0 && lng == 0 && widget.find('input[type="text"]:first').val() != '') {
-        addressfieldAutocompleteManualAddressGeocode(widget.find('input[type="text"]:first'));
-      }
+       if (lat == 0 && lng == 0 && widget.find('input[type="text"][data-geo!="lat"][data-geo!="lng"]:first').val() != '') {
+         addressfieldAutocompleteManualAddressGeocode(widget.find('input[type="text"][data-geo!="lat"][data-geo!="lng"]:first'));
+       }
     }
     /*
      * If the widget contains the class error we want to reveal the widget so
@@ -174,7 +174,7 @@
    */
   var addressfieldAutocompleteResetMap = function(o, centeredAt) {
     var map = o.geocomplete('map'),
-            marker = o.geocomplete('marker');
+        marker = o.geocomplete('marker');
 
     if (map) {
       var center = centeredAt;
@@ -211,8 +211,10 @@
       else if (o.hasClass('manual-remove')) {
         // Reset all values back to zero
         o.removeClass('manual-add manual-remove').val('');
-        o.removeData('result');
+        // o.removeData('result');
         widget.find('input,select.state').val('');
+        // Resetting the country, avoid module to validate this input and save geo-field.
+        // widget.find('select.country').val(null).trigger('change');
         addressfieldAutocompleteResetMap(o);
         reveal.val(0);
         reveal.trigger('change');
@@ -235,6 +237,7 @@
       input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input'),
       address = [];
     if (data === undefined) {
+    // if (data === undefined) && !input.hasClass('manual-remove')) {
       input.removeClass('reverse-geocode').addClass('manual-add');
     }
     if (input.hasClass('manual-add') && !input.hasClass('reverse-geocode')) {
@@ -244,6 +247,12 @@
        */
       if (o.hasClass('country')) {
         widget.find('input,select.state').val('');
+        // If we select the empty country "- None -", do not autocomplete the filed and clear data.
+        if (o.val() == '') {
+          input.removeData('result');
+          input.val('');
+          return true;
+        }
       }
       /*
        * Take all of the values out of the address fields and insert
