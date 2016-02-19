@@ -449,8 +449,8 @@
       $('.addressfield-autocomplete-centermap').once().bind('mousedown', function(e) {
         var widget = $(this).closest('div[id^="addressfield-wrapper"]'),
             input = widget.prevAll('.form-item').find('.addressfield-autocomplete-input');
-        lat = widget.find('input[type="text"][data-geo="lat"').val();
-        lng = widget.find('input[type="text"][data-geo="lng"').val();
+        lat = widget.find('input[type="text"][data-geo="lat"]').val();
+        lng = widget.find('input[type="text"][data-geo="lng"]').val();
         center = new google.maps.LatLng(lat,lng);
 
         addressfieldAutocompleteResetMap(input, center);
